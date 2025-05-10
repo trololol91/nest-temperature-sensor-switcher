@@ -1,17 +1,11 @@
 import path from 'path';
-import { fileURLToPath } from 'url';
 import { BrowserContext, chromium, Page } from 'playwright';
 import { HomePage } from 'page/homepage.page.js';
 import { DeviceConstants, ThermostatDeviceIDs } from 'constants.mjs';
-import yargs from 'yargs';
-import { hideBin } from 'yargs/helpers';
-import { saveSession, restoreSession } from './utils/sessionUtils.mjs';
-import { takeScreenshotWithTimestamp } from './utils/screenshotUtils.mjs';
+import { saveSession, restoreSession } from '../utils/sessionUtils.mjs';
+import { takeScreenshotWithTimestamp } from '../utils/screenshotUtils.mjs';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-async function changeNestThermostat(deviceID: ThermostatDeviceIDs, headless: boolean): Promise<void> {
+export async function changeNestThermostat(deviceID: ThermostatDeviceIDs, headless: boolean): Promise<void> {
     console.log('Starting Playwright...');
     const browser = await chromium.launch({
         headless: headless, // Use the headless argument from yargs
@@ -73,7 +67,7 @@ async function changeNestThermostat(deviceID: ThermostatDeviceIDs, headless: boo
     } catch (error) {
         // Take a screenshot with a timestamp
         if (page) {
-            await takeScreenshotWithTimestamp(page, path.resolve(__dirname, '../screenshots'));
+            await takeScreenshotWithTimestamp(page, path.resolve(__dirname, '../../screenshots'));
         } else {
             console.error('Page object is not available for taking a screenshot.');
         }
@@ -87,33 +81,3 @@ async function changeNestThermostat(deviceID: ThermostatDeviceIDs, headless: boo
         await browser.close();
     }
 }
-
-// Parse command-line arguments
-const argv = await yargs(hideBin(process.argv))
-    .option('deviceName', {
-        alias: 'n',
-        type: 'string',
-        description: 'The name of the thermostat to interact with',
-        choices: Object.keys(ThermostatDeviceIDs),
-        demandOption: true,
-    })
-    .option('headless', {
-        alias: 'hl',
-        type: 'boolean',
-        description: 'Run browser in headless mode',
-        default: true,
-    })
-    .help()
-    .alias('help', 'h')
-    .parseAsync();
-
-(async function main(): Promise<void> {
-    try {
-        const deviceID = ThermostatDeviceIDs[argv.deviceName as keyof typeof ThermostatDeviceIDs];
-        await changeNestThermostat(deviceID, argv.headless);
-    } catch (error) {
-        console.error('Error in main function:', error);
-    }
-})().catch(error => {
-    console.error('Unhandled error in main function:', error);
-});

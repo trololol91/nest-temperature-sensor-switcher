@@ -6,7 +6,7 @@
   "scripts": {
     "start": "tsx src/sample.mts",
     "lint:eslint": "eslint --quiet --fix",
-    "change:thermostat": "tsx src/changeNestThermostat.mts"
+    "change:thermostat": "tsx src/changeNestThermostatCLI.mts"
   },
   "type": "module",
   "author": "",
