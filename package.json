@@ -4,9 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "tsx src/sample.mts",
     "lint:eslint": "eslint --quiet --fix",
-    "change:thermostat": "tsx src/changeNestThermostatCLI.mts"
+    "change:thermostat": "tsx src/changeNestThermostatCLI.mts",
+    "start": "tsx src/server.mts",
+    "start:watch": "tsx watch src/server.mts"
   },
   "type": "module",
   "author": "",
@@ -24,7 +25,6 @@
     "eslint-config-prettier": "10.1.5",
     "eslint-plugin-jest": "28.11.0",
     "jest": "29.7.0",
-    "lodash": "4.17.21",
     "playwright": "1.52.0",
     "prettier": "3.5.3",
     "prettier-eslint": "16.4.2",
@@ -34,5 +34,10 @@
     "typescript": "5.8.3",
     "typescript-eslint": "8.32.0",
     "yargs": "17.7.2"
+  },
+  "dependencies": {
+    "dotenv": "16.5.0",
+    "express": "5.1.0",
+    "lodash": "4.17.21"
   }
 }

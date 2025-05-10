@@ -72,6 +72,7 @@ export async function changeNestThermostat(deviceID: ThermostatDeviceIDs, headle
             console.error('Page object is not available for taking a screenshot.');
         }
         console.error('Error interacting with Nest thermostat. Details:', error);
+        throw error; // Re-throw the error after logging and taking a screenshot
     } finally {
         // Save session cookies using the browser's context
         const cookies = await context.cookies();
