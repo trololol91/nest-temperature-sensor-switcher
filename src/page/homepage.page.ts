@@ -117,4 +117,19 @@ export class HomePage {
         });
         console.log('Settings button is now visible.');
     }
+
+    /**
+     * Waits for the home icon label to be visible on the page.
+     * @param {{ timeout?: number }} [options] - Optional parameters.
+     * @param {number} [options.timeout] - Maximum time to wait in milliseconds.
+     * @returns {Promise<void>} A promise that resolves when the home icon label is visible.
+     */
+    public async waitForHomeIconLabelVisible(options?: { timeout?: number }): Promise<void> {
+        const selector = "label[for='icon-mode-home']";
+        await this.page.waitForSelector(selector, {
+            state: 'visible',
+            timeout: options?.timeout,
+        });
+        console.log('Home icon label is now visible.');
+    }
 }

@@ -6,3 +6,6 @@
 /dist
 
 session.json
+
+# Ignore screenshots directory
+screenshots/

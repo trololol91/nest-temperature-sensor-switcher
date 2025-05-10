@@ -1,28 +1,15 @@
-import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { BrowserContext, chromium } from 'playwright';
+import { BrowserContext, chromium, Page } from 'playwright';
 import { HomePage } from 'page/homepage.page.js';
 import { DeviceConstants, ThermostatDeviceIDs } from 'constants.mjs';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
+import { saveSession, restoreSession } from './utils/sessionUtils.mjs';
+import { takeScreenshotWithTimestamp } from './utils/screenshotUtils.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const SESSION_FILE_PATH = path.resolve(__dirname, '../session.json');
-
-async function saveSession(cookies: Array<{ name: string; value: string; domain: string; path: string; expires: number; httpOnly: boolean; secure: boolean; sameSite: string; }>): Promise<void> {
-    fs.writeFileSync(SESSION_FILE_PATH, JSON.stringify(cookies, null, 2));
-    console.log('Session saved to', SESSION_FILE_PATH);
-}
-
-async function restoreSession(context: BrowserContext): Promise<void> {
-    if (fs.existsSync(SESSION_FILE_PATH)) {
-        const cookies = JSON.parse(fs.readFileSync(SESSION_FILE_PATH, 'utf-8'));
-        await context.addCookies(cookies);
-        console.log('Session restored from', SESSION_FILE_PATH);
-    }
-}
 
 async function changeNestThermostat(deviceID: ThermostatDeviceIDs): Promise<void> {
     console.log('Starting Playwright...');
@@ -50,15 +37,16 @@ async function changeNestThermostat(deviceID: ThermostatDeviceIDs): Promise<void
     // Restore session if available
     await restoreSession(context);
 
+    let page: Page | undefined;
     try {
-        const page = await context.newPage();
+        page = await context.newPage();
 
         // Use the HomePage page object to navigate to the Nest home page
         const homePage = new HomePage(page);
         await homePage.navigate();
 
-        // Wait for the page to load completely
-        await new Promise(resolve => setTimeout(resolve, 10000));
+        // Wait for the home icon label to be visible
+        await homePage.waitForHomeIconLabelVisible({ timeout: 10000 });
 
         // Click on thermostat puck item
         const thermostatItem = await homePage.selectPuckItemByHref(DeviceConstants.LivingRoomThermostat);
@@ -85,7 +73,13 @@ async function changeNestThermostat(deviceID: ThermostatDeviceIDs): Promise<void
 
         // Perform additional actions here if needed
     } catch (error) {
-        console.error('Error navigating to https://home.nest.com:', error);
+        // Take a screenshot with a timestamp
+        if (page) {
+            await takeScreenshotWithTimestamp(page, path.resolve(__dirname, '../screenshots'));
+        } else {
+            console.error('Page object is not available for taking a screenshot.');
+        }
+        console.error('Error interacting with Nest thermostat. Details:', error);
     } finally {
         // Save session cookies using the browser's context
         const cookies = await context.cookies();
