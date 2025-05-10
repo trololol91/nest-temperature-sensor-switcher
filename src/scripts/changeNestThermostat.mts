@@ -1,6 +1,6 @@
 import path from 'path';
 import { BrowserContext, chromium, Page } from 'playwright';
-import { HomePage } from 'page/homepage.page.js';
+import { HomePage } from 'page/homepage.page.mjs';
 import { saveSession, restoreSession } from '../utils/sessionUtils.mjs';
 import { takeScreenshotWithTimestamp } from '../utils/screenshotUtils.mjs';
 import { fileURLToPath } from 'url';
