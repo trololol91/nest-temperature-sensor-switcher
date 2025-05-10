@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "lint:eslint": "eslint --quiet --fix",
-    "change:thermostat": "tsx src/changeNestThermostatCLI.mts",
+    "cli": "tsx src/changeNestThermostatCLI.mts",
     "start": "tsx src/server.mts",
     "start:watch": "tsx watch src/server.mts"
   },
@@ -39,6 +39,7 @@
     "dotenv": "16.5.0",
     "express": "5.1.0",
     "lodash": "4.17.21",
+    "sqlite3": "5.1.7",
     "swagger-jsdoc": "6.2.8",
     "swagger-ui-express": "5.0.1"
   }

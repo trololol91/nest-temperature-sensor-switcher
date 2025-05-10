@@ -1,4 +1,4 @@
-import { ThermostatDeviceIDs } from 'constants.mjs';
+import { DeviceConstants } from 'constants.mjs';
 import { Page, ElementHandle } from 'playwright';
 
 /**
@@ -50,7 +50,7 @@ export class HomePage {
      * @param {string} href - The href value of the puck item to select.
      * @returns {Promise<ElementHandle | null>} A promise that resolves to the selected element or null if not found.
      */
-    public async selectPuckItemByHref(href: string): Promise<ElementHandle | null> {
+    public async selectPuckItemByHref(href: DeviceConstants): Promise<ElementHandle | null> {
         const selector = `.puck-item a[href='${href}']`;
         const element = await this.page.$(selector);
         if (!element) {
@@ -61,10 +61,10 @@ export class HomePage {
 
     /**
      * Selects a temperature sensor element by its device ID.
-     * @param {ThermostatDeviceIDs} deviceID - The device ID of the temperature sensor to select.
+     * @param {string} deviceID - The device ID of the temperature sensor to select.
      * @returns {Promise<ElementHandle | null>} A promise that resolves to the selected element or null if not found.
      */
-    public async selectTemperatureSensorByDeviceID(deviceID: ThermostatDeviceIDs): Promise<ElementHandle | null> {
+    public async selectTemperatureSensorByDeviceID(deviceID: string): Promise<ElementHandle | null> {
         const selector = `.card span[data-test='thermozilla-aag-sensors-temperature-sensor-${deviceID}-listcell-value']`;
         const element = await this.page.$(selector);
         if (!element) {
@@ -75,13 +75,13 @@ export class HomePage {
 
     /**
      * Waits for the temperature sensor with the specified device ID to be selected.
-     * @param {ThermostatDeviceIDs} deviceID - The device ID of the temperature sensor.
+     * @param {string} deviceID - The device ID of the temperature sensor.
      * @param {{ timeout?: number }} [options] - Optional parameters.
      * @param {number} [options.timeout] - Maximum time to wait in milliseconds.
      * @returns {Promise<void>} A promise that resolves when the sensor is selected.
      */
     public async waitForTemperatureSensorSelected(
-        deviceID: ThermostatDeviceIDs,
+        deviceID: string,
         options?: { timeout?: number }
     ): Promise<void> {
         const selector = `.card div[data-test='thermozilla-aag-sensors-temperature-sensor-${deviceID}-listcell']`;
@@ -94,10 +94,10 @@ export class HomePage {
 
     /**
      * Checks if the temperature sensor with the specified device ID is already selected.
-     * @param {ThermostatDeviceIDs} deviceID - The device ID of the temperature sensor.
+     * @param {string} deviceID - The device ID of the temperature sensor.
      * @returns {Promise<boolean>} A promise that resolves to true if the sensor is selected, false otherwise.
      */
-    public async isTemperatureSensorSelected(deviceID: ThermostatDeviceIDs): Promise<boolean> {
+    public async isTemperatureSensorSelected(deviceID: string): Promise<boolean> {
         const selector = `.card div[data-test='thermozilla-aag-sensors-temperature-sensor-${deviceID}-listcell'].style--selected_3GC`;
         const element = await this.page.$(selector);
         return element !== null;

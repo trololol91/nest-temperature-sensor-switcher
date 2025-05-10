@@ -9,3 +9,6 @@ session.json
 
 # Ignore screenshots directory
 screenshots/
+
+# Ignore database files
+*.db
