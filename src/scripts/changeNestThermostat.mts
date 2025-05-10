@@ -1,21 +1,19 @@
-import path from 'path';
+import path, { dirname } from 'path';
 import { BrowserContext, chromium, Page } from 'playwright';
 import { HomePage } from 'page/homepage.page.mjs';
+import { fileURLToPath } from 'url';
+import { DeviceConstants } from 'constants.mjs';
 import { saveSession, restoreSession } from '../utils/sessionUtils.mjs';
 import { takeScreenshotWithTimestamp } from '../utils/screenshotUtils.mjs';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
-import { DeviceConstants } from 'constants.mjs';
+
 
 // Resolve __dirname for ESM
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-
-// Update changeNestThermostat to accept only database entries
 export async function changeNestThermostat(deviceID: string, headless: boolean): Promise<void> {
     console.log('Starting Playwright...');
     const browser = await chromium.launch({
-        headless: headless,
+        headless: headless, // Use the headless argument from yargs
         args: [
             '--disable-gpu',
             '--disable-dev-shm-usage',
@@ -56,7 +54,21 @@ export async function changeNestThermostat(deviceID: string, headless: boolean):
         // Wait for the thermostat setting button to be visible
         await homePage.waitForSettingsButtonVisible({ timeout: 10000 });
 
+        // Check if the thermostat is already selected
+        const isSelected = await homePage.isTemperatureSensorSelected(deviceID);
+        if (isSelected) {
+            console.log(`Thermostat with deviceID: ${deviceID} is already selected.`);
+            return;
+        }
+
+        // Click on the specified thermostat
+        const thermostat = await homePage.selectTemperatureSensorByDeviceID(deviceID);
+        await thermostat.scrollIntoViewIfNeeded();
+        await thermostat.evaluate((el) => el.click());
         console.log(`Clicked on thermostat with deviceID: ${deviceID}`);
+
+        // Wait for thermostat to be selected
+        await homePage.waitForTemperatureSensorSelected(deviceID);
     } catch (error) {
         // Take a screenshot with a timestamp
         if (page) {
@@ -65,7 +77,7 @@ export async function changeNestThermostat(deviceID: string, headless: boolean):
             console.error('Page object is not available for taking a screenshot.');
         }
         console.error('Error interacting with Nest thermostat. Details:', error);
-        throw error;
+        throw error; // Re-throw the error after logging and taking a screenshot
     } finally {
         // Save session cookies using the browser's context
         const cookies = await context.cookies();
