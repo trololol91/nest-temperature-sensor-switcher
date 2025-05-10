@@ -11,10 +11,10 @@ import { takeScreenshotWithTimestamp } from './utils/screenshotUtils.mjs';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-async function changeNestThermostat(deviceID: ThermostatDeviceIDs): Promise<void> {
+async function changeNestThermostat(deviceID: ThermostatDeviceIDs, headless: boolean): Promise<void> {
     console.log('Starting Playwright...');
     const browser = await chromium.launch({
-        headless: false, // Set to false if you want to see the browser UI
+        headless: headless, // Use the headless argument from yargs
         args: [
             '--disable-gpu',
             '--disable-dev-shm-usage',
@@ -70,8 +70,6 @@ async function changeNestThermostat(deviceID: ThermostatDeviceIDs): Promise<void
 
         // Wait for thermostat to be selected
         await homePage.waitForTemperatureSensorSelected(deviceID);
-
-        // Perform additional actions here if needed
     } catch (error) {
         // Take a screenshot with a timestamp
         if (page) {
@@ -99,6 +97,12 @@ const argv = await yargs(hideBin(process.argv))
         choices: Object.keys(ThermostatDeviceIDs),
         demandOption: true,
     })
+    .option('headless', {
+        alias: 'hl',
+        type: 'boolean',
+        description: 'Run browser in headless mode',
+        default: true,
+    })
     .help()
     .alias('help', 'h')
     .parseAsync();
@@ -106,7 +110,7 @@ const argv = await yargs(hideBin(process.argv))
 (async function main(): Promise<void> {
     try {
         const deviceID = ThermostatDeviceIDs[argv.deviceName as keyof typeof ThermostatDeviceIDs];
-        await changeNestThermostat(deviceID);
+        await changeNestThermostat(deviceID, argv.headless);
     } catch (error) {
         console.error('Error in main function:', error);
     }
