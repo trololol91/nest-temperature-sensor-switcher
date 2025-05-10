@@ -65,7 +65,7 @@ export class HomePage {
      * @returns {Promise<ElementHandle | null>} A promise that resolves to the selected element or null if not found.
      */
     public async selectTemperatureSensorByDeviceID(deviceID: ThermostatDeviceIDs): Promise<ElementHandle | null> {
-        const selector = `.card span[data-test="thermozilla-aag-sensors-temperature-sensor-${deviceID}-listcell-value"]`;
+        const selector = `.card span[data-test='thermozilla-aag-sensors-temperature-sensor-${deviceID}-listcell-value']`;
         const element = await this.page.$(selector);
         if (!element) {
             console.error(`Temperature sensor with deviceID '${deviceID}' not found.`);
@@ -84,11 +84,37 @@ export class HomePage {
         deviceID: ThermostatDeviceIDs,
         options?: { timeout?: number }
     ): Promise<void> {
-        const selector = `.card div[data-test="thermozilla-aag-sensors-temperature-sensor-${deviceID}-listcell"]`;
+        const selector = `.card div[data-test='thermozilla-aag-sensors-temperature-sensor-${deviceID}-listcell']`;
         await this.page.waitForSelector(`${selector}.style--selected_3GC`, {
             state: 'attached',
             timeout: options?.timeout,
         });
         console.log(`Temperature sensor with deviceID '${deviceID}' is now selected.`);
+    }
+
+    /**
+     * Checks if the temperature sensor with the specified device ID is already selected.
+     * @param {ThermostatDeviceIDs} deviceID - The device ID of the temperature sensor.
+     * @returns {Promise<boolean>} A promise that resolves to true if the sensor is selected, false otherwise.
+     */
+    public async isTemperatureSensorSelected(deviceID: ThermostatDeviceIDs): Promise<boolean> {
+        const selector = `.card div[data-test='thermozilla-aag-sensors-temperature-sensor-${deviceID}-listcell'].style--selected_3GC`;
+        const element = await this.page.$(selector);
+        return element !== null;
+    }
+
+    /**
+     * Waits for the settings button to be visible on the page.
+     * @param {{ timeout?: number }} [options] - Optional parameters.
+     * @param {number} [options.timeout] - Maximum time to wait in milliseconds.
+     * @returns {Promise<void>} A promise that resolves when the settings button is visible.
+     */
+    public async waitForSettingsButtonVisible(options?: { timeout?: number }): Promise<void> {
+        const selector = "button[data-test='thermozilla-header-settings-button']";
+        await this.page.waitForSelector(selector, {
+            state: 'visible',
+            timeout: options?.timeout,
+        });
+        console.log('Settings button is now visible.');
     }
 }

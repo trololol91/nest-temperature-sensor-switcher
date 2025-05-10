@@ -5,8 +5,8 @@ export enum DeviceConstants {
 }
 
 export enum ThermostatDeviceIDs {
-    LivingRoomThermostat = 'thermostat.DEVICE_CCA7C100002935B9',
-    BabyRoomTemperatureSensor = '18B430CA60676D9D',
-    MasterBedroomTemperatureSensor = '18B430CB50D0F1E8',
-    OfflineTemperatureSensor = '18B430CCC3346034'
+    LivingRoom = 'thermostat.DEVICE_CCA7C100002935B9',
+    BabyRoom = '18B430CA60676D9D',
+    MasterBedroom = '18B430CB50D0F1E8',
+    Office = '18B430CCC3346034'
 }

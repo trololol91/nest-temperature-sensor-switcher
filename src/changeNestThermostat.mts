@@ -4,13 +4,12 @@ import { fileURLToPath } from 'url';
 import { BrowserContext, chromium } from 'playwright';
 import { HomePage } from 'page/homepage.page.js';
 import { DeviceConstants, ThermostatDeviceIDs } from 'constants.mjs';
+import yargs from 'yargs';
+import { hideBin } from 'yargs/helpers';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const SESSION_FILE_PATH = path.resolve(__dirname, '../session.json');
-
-// Wait for 5 minutes before closing the browser
-const WAIT_TIME_MS = 15 * 60 * 1000;
 
 async function saveSession(cookies: Array<{ name: string; value: string; domain: string; path: string; expires: number; httpOnly: boolean; secure: boolean; sameSite: string; }>): Promise<void> {
     fs.writeFileSync(SESSION_FILE_PATH, JSON.stringify(cookies, null, 2));
@@ -65,9 +64,20 @@ async function changeNestThermostat(deviceID: ThermostatDeviceIDs): Promise<void
         const thermostatItem = await homePage.selectPuckItemByHref(DeviceConstants.LivingRoomThermostat);
         await thermostatItem.click();
 
+        // Wait for the thermostat setting button to be visible
+        await homePage.waitForSettingsButtonVisible({ timeout: 10000 });
+
+        // Check if the thermostat is already selected
+        const isSelected = await homePage.isTemperatureSensorSelected(deviceID);
+        if (isSelected) {
+            console.log(`Thermostat with deviceID: ${deviceID} is already selected.`);
+            return;
+        }
+
         // Click on the specified thermostat
         const thermostat = await homePage.selectTemperatureSensorByDeviceID(deviceID);
-        await thermostat.click();
+        await thermostat.scrollIntoViewIfNeeded();
+        await thermostat.evaluate((el) => el.click());
         console.log(`Clicked on thermostat with deviceID: ${deviceID}`);
 
         // Wait for thermostat to be selected
@@ -77,9 +87,6 @@ async function changeNestThermostat(deviceID: ThermostatDeviceIDs): Promise<void
     } catch (error) {
         console.error('Error navigating to https://home.nest.com:', error);
     } finally {
-        // Wait for 15 minutes before closing the browser
-        await new Promise(resolve => setTimeout(resolve, WAIT_TIME_MS));
-
         // Save session cookies using the browser's context
         const cookies = await context.cookies();
         await saveSession(cookies);
@@ -89,7 +96,26 @@ async function changeNestThermostat(deviceID: ThermostatDeviceIDs): Promise<void
     }
 }
 
-// Run the function
-changeNestThermostat(ThermostatDeviceIDs.LivingRoomThermostat).catch(error => {
-    console.error('Unhandled error in changeNestThermostat:', error);
+// Parse command-line arguments
+const argv = await yargs(hideBin(process.argv))
+    .option('deviceName', {
+        alias: 'n',
+        type: 'string',
+        description: 'The name of the thermostat to interact with',
+        choices: Object.keys(ThermostatDeviceIDs),
+        demandOption: true,
+    })
+    .help()
+    .alias('help', 'h')
+    .parseAsync();
+
+(async function main(): Promise<void> {
+    try {
+        const deviceID = ThermostatDeviceIDs[argv.deviceName as keyof typeof ThermostatDeviceIDs];
+        await changeNestThermostat(deviceID);
+    } catch (error) {
+        console.error('Error in main function:', error);
+    }
+})().catch(error => {
+    console.error('Unhandled error in main function:', error);
 });

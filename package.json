@@ -6,7 +6,7 @@
   "scripts": {
     "start": "tsx src/sample.mts",
     "lint:eslint": "eslint --quiet --fix",
-    "navigate:nest": "tsx src/navigateToNest.mts"
+    "change:thermostat": "tsx src/changeNestThermostat.mts"
   },
   "type": "module",
   "author": "",
