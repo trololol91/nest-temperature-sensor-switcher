@@ -3,24 +3,39 @@ import path from 'path';
 import { BrowserContext } from 'playwright';
 import { fileURLToPath } from 'url';
 import { getEncryptionKey, encrypt, decrypt } from './crypto.mjs';
+import { createNamedLogger } from './logger.mjs';
 
 // Replace __dirname with a dynamic resolution
 const SESSION_FILE_PATH = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../resource/session');
 
 const ENCRYPTION_KEY = getEncryptionKey();
+const logger = createNamedLogger('SessionUtils');
 
+/**
+ * Saves the session cookies to a file after encrypting them.
+ *
+ * @param {Array} cookies - The cookies to save.
+ * @returns {Promise<void>} - A promise that resolves when the session is saved.
+ */
 export async function saveSession(cookies: Array<{ name: string; value: string; domain: string; path: string; expires: number; httpOnly: boolean; secure: boolean; sameSite: string; }>): Promise<void> {
     const encryptedData = encrypt(JSON.stringify(cookies), ENCRYPTION_KEY);
     fs.writeFileSync(SESSION_FILE_PATH, encryptedData);
-    console.log('Session saved to', SESSION_FILE_PATH);
+    logger.info('Session saved to', SESSION_FILE_PATH);
 }
 
+
+/**
+ * Restores the session by reading cookies from a file and adding them to the provided context.
+ *
+ * @param {BrowserContext} context - The Playwright browser context to restore the session into.
+ * @returns {Promise<void>} - A promise that resolves when the session is restored.
+ */
 export async function restoreSession(context: BrowserContext): Promise<void> {
     if (fs.existsSync(SESSION_FILE_PATH)) {
         const encryptedData = fs.readFileSync(SESSION_FILE_PATH, 'utf-8');
         const cookies = JSON.parse(decrypt(encryptedData, ENCRYPTION_KEY));
         await context.addCookies(cookies);
-        console.log('Session restored from', SESSION_FILE_PATH);
+        logger.info('Session restored from', SESSION_FILE_PATH);
     }
 }
 

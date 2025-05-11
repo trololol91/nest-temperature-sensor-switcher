@@ -11,6 +11,12 @@ const logger = createNamedLogger('ChangeNestThermostatScript');
 
 const SCREENSHOTS_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../screenshots');
 
+/**
+ * Changes the selected Nest thermostat to the specified device ID.
+ * @param {string} deviceID - The device ID of the thermostat to select.
+ * @param {boolean} headless - Whether to run the browser in headless mode.
+ * @returns {Promise<void>} - A promise that resolves when the operation is complete.
+ */
 export async function changeNestThermostat(deviceID: string, headless: boolean): Promise<void> {
     logger.info('Starting Playwright...');
     const browser = await chromium.launch({

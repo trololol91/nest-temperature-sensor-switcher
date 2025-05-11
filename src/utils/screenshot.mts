@@ -1,5 +1,14 @@
+/**
+ * Utility functions for handling screenshots.
+ *
+ * This module provides methods to capture and save screenshots during
+ * error scenarios or for debugging purposes.
+ */
 import path from 'path';
 import { Page } from 'playwright';
+import { createNamedLogger } from './logger.mjs';
+
+const logger = createNamedLogger('ScreenshotUtils');
 
 /**
  * Takes a screenshot of the current page and saves it with a timestamped filename.
@@ -11,5 +20,5 @@ export async function takeScreenshotWithTimestamp(page: Page, directory: string)
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const screenshotPath = path.resolve(directory, `error-${timestamp}.png`);
     await page.screenshot({ path: screenshotPath });
-    console.error(`Screenshot saved to ${screenshotPath}`);
+    logger.error(`Screenshot saved to ${screenshotPath}`);
 }

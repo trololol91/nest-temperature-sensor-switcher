@@ -1,3 +1,19 @@
+/**
+ * Login Script.
+ *
+ * This script automates the login process for the Nest application using Playwright.
+ * It restores a saved browser session if available, or prompts the user to log in manually.
+ * The session is then saved for future use.
+ *
+ * Functions:
+ * - `promptUntilDone()`: Prompts the user until they type 'Done'.
+ * - `restoreSession(context: BrowserContext)`: Restores a saved session to the browser context.
+ * - `saveSession(cookies: Array<Cookie>): void`: Saves the current session cookies.
+ *
+ * Logging:
+ * - Logs events and errors using the Winston logger.
+ */
+
 import { chromium } from 'playwright';
 import { restoreSession, saveSession } from '../utils/session.mjs';
 import { HomePage } from 'page/homepage.page.mjs';

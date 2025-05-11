@@ -1,7 +1,17 @@
+/**
+ * Main CLI script for changing Nest thermostat settings.
+ *
+ * This script allows users to list devices or change the thermostat settings
+ * based on the provided device name or ID. It interacts with the SQLite database
+ * to fetch device information and uses Playwright for browser automation.
+ */
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { changeNestThermostat } from './scripts/changeNestThermostat.mjs';
 import sqlite3 from 'sqlite3';
+import { createNamedLogger } from './utils/logger.mjs'; // Fixed the logger import path
+
+const logger = createNamedLogger('ChangeNestThermostatCLI');
 
 // Initialize SQLite database
 const db = new sqlite3.Database('resource/encrypted-sensors.db');
@@ -33,7 +43,7 @@ const argv = await yargs(hideBin(process.argv))
 
 // Dynamically enforce 'deviceName' requirement if 'list' is not used
 if (!argv.list && !argv.deviceName) {
-    console.error("Error: The 'deviceName' argument is required unless '--list' is specified.");
+    logger.error("Error: The 'deviceName' argument is required unless '--list' is specified.");
     process.exit(1);
 }
 
@@ -43,12 +53,12 @@ if (!argv.list && !argv.deviceName) {
         if (argv.list) {
             db.all('SELECT name, deviceID FROM sensors', [], (err, rows: { name: string; deviceID: string }[]) => {
                 if (err) {
-                    console.error('Error fetching devices from database:', err.message);
+                    logger.error('Error fetching devices from database:', err.message);
                     process.exit(1);
                 }
-                console.log('Devices in the database:');
+                logger.info('Devices in the database:');
                 rows.forEach((row) => {
-                    console.log(`- ${row.name}: ${row.deviceID}`);
+                    logger.info(`- ${row.name}: ${row.deviceID}`);
                 });
                 db.close();
                 process.exit(0);
@@ -57,28 +67,28 @@ if (!argv.list && !argv.deviceName) {
             // Fetch deviceID from the database based on deviceName
             db.get('SELECT deviceID FROM sensors WHERE name = ?', [argv.deviceName], async (err, row: { deviceID: string } | undefined) => {
                 if (err) {
-                    console.error('Error fetching device from database:', err.message);
+                    logger.error('Error fetching device from database:', err.message);
                     process.exit(1);
                 }
                 if (!row) {
-                    console.error('Device name not found in the database.');
+                    logger.error('Device name not found in the database.');
                     process.exit(1);
                 }
 
                 try {
                     await changeNestThermostat(row.deviceID, argv.headless);
                 } catch (error) {
-                    console.error('Error in main function:', error);
+                    logger.error('Error in main function:', error);
                 } finally {
                     db.close();
                 }
             });
         }
     } catch (error) {
-        console.error('Unhandled error in main function:', error);
+        logger.error('Unhandled error in main function:', error);
         db.close();
     }
 })().catch(error => {
-    console.error('Unhandled error in main execution:', error);
+    logger.error('Unhandled error in main execution:', error);
     process.exit(1);
 });

@@ -1,5 +1,15 @@
+/**
+ * Page object model for the Nest homepage.
+ *
+ * This class provides methods to interact with the homepage elements,
+ * such as navigating to the page, selecting devices, and interacting with
+ * temperature sensors.
+ */
 import { DeviceConstants } from 'constants.mjs';
 import { Page, ElementHandle } from 'playwright';
+import { createNamedLogger } from '../utils/logger.mjs';
+
+const logger = createNamedLogger('HomePage');
 
 /**
  * @fileoverview Provides the HomePage class which encapsulates the operations required 
@@ -42,7 +52,7 @@ export class HomePage {
      */
     public async navigate(): Promise<void> {
         await this.page.goto(this.url);
-        console.log(`Navigated to ${this.url}`);
+        logger.info(`Navigated to ${this.url}`);
     }
 
     /**
@@ -54,7 +64,7 @@ export class HomePage {
         const selector = `.puck-item a[href='${href}']`;
         const element = await this.page.$(selector);
         if (!element) {
-            console.error(`Element with href '${href}' not found.`);
+            logger.error(`Element with href '${href}' not found.`);
         }
         return element;
     }
@@ -68,7 +78,7 @@ export class HomePage {
         const selector = `.card span[data-test='thermozilla-aag-sensors-temperature-sensor-${deviceID}-listcell-value']`;
         const element = await this.page.$(selector);
         if (!element) {
-            console.error(`Temperature sensor with deviceID '${deviceID}' not found.`);
+            logger.error(`Temperature sensor with deviceID '${deviceID}' not found.`);
         }
         return element;
     }
@@ -89,7 +99,7 @@ export class HomePage {
             state: 'attached',
             timeout: options?.timeout,
         });
-        console.log(`Temperature sensor with deviceID '${deviceID}' is now selected.`);
+        logger.info(`Temperature sensor with deviceID '${deviceID}' is now selected.`);
     }
 
     /**
@@ -115,7 +125,7 @@ export class HomePage {
             state: 'visible',
             timeout: options?.timeout,
         });
-        console.log('Settings button is now visible.');
+        logger.info('Settings button is now visible.');
     }
 
     /**
@@ -130,6 +140,6 @@ export class HomePage {
             state: 'visible',
             timeout: options?.timeout,
         });
-        console.log('Home icon label is now visible.');
+        logger.info('Home icon label is now visible.');
     }
 }
