@@ -1,17 +1,18 @@
-import path, { dirname } from 'path';
+import path from 'path';
 import { BrowserContext, chromium, Page } from 'playwright';
 import { HomePage } from 'page/homepage.page.mjs';
 import { fileURLToPath } from 'url';
 import { DeviceConstants } from 'constants.mjs';
 import { saveSession, restoreSession } from '../utils/sessionUtils.mjs';
 import { takeScreenshotWithTimestamp } from '../utils/screenshotUtils.mjs';
+import { createNamedLogger } from '../utils/logger.mjs';
 
+const logger = createNamedLogger('ChangeNestThermostatScript');
 
-// Resolve __dirname for ESM
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const SCREENSHOTS_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../screenshots');
+
 export async function changeNestThermostat(deviceID: string, headless: boolean): Promise<void> {
-    console.log('Starting Playwright...');
+    logger.info('Starting Playwright...');
     const browser = await chromium.launch({
         headless: headless, // Use the headless argument from yargs
         args: [
@@ -57,7 +58,7 @@ export async function changeNestThermostat(deviceID: string, headless: boolean):
         // Check if the thermostat is already selected
         const isSelected = await homePage.isTemperatureSensorSelected(deviceID);
         if (isSelected) {
-            console.log(`Thermostat with deviceID: ${deviceID} is already selected.`);
+            logger.info(`Thermostat with deviceID: ${deviceID} is already selected.`);
             return;
         }
 
@@ -65,25 +66,28 @@ export async function changeNestThermostat(deviceID: string, headless: boolean):
         const thermostat = await homePage.selectTemperatureSensorByDeviceID(deviceID);
         await thermostat.scrollIntoViewIfNeeded();
         await thermostat.evaluate((el) => el.click());
-        console.log(`Clicked on thermostat with deviceID: ${deviceID}`);
+        logger.info(`Clicked on thermostat with deviceID: ${deviceID}`);
 
         // Wait for thermostat to be selected
         await homePage.waitForTemperatureSensorSelected(deviceID);
     } catch (error) {
         // Take a screenshot with a timestamp
         if (page) {
-            await takeScreenshotWithTimestamp(page, path.resolve(__dirname, '../../screenshots'));
+            await takeScreenshotWithTimestamp(page, SCREENSHOTS_DIR);
+            logger.error(`Screenshot saved to ${SCREENSHOTS_DIR}`);
         } else {
-            console.error('Page object is not available for taking a screenshot.');
+            logger.error('Page object is not available for taking a screenshot.');
         }
-        console.error('Error interacting with Nest thermostat. Details:', error);
+        logger.error(`Error interacting with Nest thermostat. Details: ${error}`);
         throw error; // Re-throw the error after logging and taking a screenshot
     } finally {
         // Save session cookies using the browser's context
         const cookies = await context.cookies();
         await saveSession(cookies);
-        
+        logger.info('Session cookies saved.');
+
         // Close the browser
         await browser.close();
+        logger.info('Browser closed.');
     }
 }

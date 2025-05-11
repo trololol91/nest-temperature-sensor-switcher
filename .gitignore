@@ -12,3 +12,4 @@ screenshots/
 
 # Ignore database files
 *.db
+*.env

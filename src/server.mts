@@ -4,6 +4,9 @@ import swaggerUi from 'swagger-ui-express';
 import swaggerJsDoc from 'swagger-jsdoc';
 import db from './middleware/database.mjs';
 import createSensorRoutes from './api/sensor.mjs';
+import { createNamedLogger } from './utils/logger.mjs';
+
+const logger = createNamedLogger('Server');
 
 // Load environment variables from .env file
 dotenv.config();
@@ -38,7 +41,10 @@ app.get('/', (_req, res) => {
 // Use the sensor routes from the API folder
 app.use('/api', createSensorRoutes(db));
 
+// Log server startup
+logger.info('Starting the Nest Temperature Sensor Switcher API server...');
+
 // Start the server
 app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+    logger.info(`Server is running on http://localhost:${PORT}`);
 });

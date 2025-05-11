@@ -1,6 +1,9 @@
 import express from 'express';
 import { changeNestThermostat } from 'scripts/changeNestThermostat.mjs';
 import sqlite3 from 'sqlite3';
+import { createNamedLogger } from '../utils/logger.mjs';
+
+const logger = createNamedLogger('SensorRoutes');
 
 /**
  * @swagger
@@ -112,7 +115,7 @@ const createSensorRoutes = (db: sqlite3.Database): express.Router => {
         // Fetch deviceID from the database based on sensorName
         db.get('SELECT deviceID FROM sensors WHERE name = ?', [sensorName], async (err, row: { deviceID: string } | undefined) => {
             if (err) {
-                console.error('Error fetching sensor from database:', err.message);
+                logger.error('Error fetching sensor from database:', err.message);
                 return res.status(500).json({ error: 'Failed to fetch sensor' });
             }
             if (!row) {
@@ -123,7 +126,7 @@ const createSensorRoutes = (db: sqlite3.Database): express.Router => {
                 await changeNestThermostat(row.deviceID, true); // Assuming headless mode
                 res.status(200).json({ message: `Temperature sensor changed to sensorName: ${sensorName}` });
             } catch (error) {
-                console.error('Error changing temperature sensor:', error);
+                logger.error('Error changing temperature sensor:', error);
                 res.status(500).json({ error: 'Failed to change temperature sensor' });
             }
         });
@@ -133,7 +136,7 @@ const createSensorRoutes = (db: sqlite3.Database): express.Router => {
     router.get('/sensor-names', (_req, res) => {
         db.all<{ name: string }>('SELECT name FROM sensors', [], (err, rows) => {
             if (err) {
-                console.error('Error fetching sensor names:', err.message);
+                logger.error('Error fetching sensor names:', err.message);
                 return res.status(500).json({ error: 'Failed to fetch sensor names' });
             }
             const sensorNames = rows.map(row => row.name);
@@ -145,7 +148,7 @@ const createSensorRoutes = (db: sqlite3.Database): express.Router => {
     router.get('/sensors', (_req, res) => {
         db.all('SELECT * FROM sensors', [], (err, rows) => {
             if (err) {
-                console.error('Error fetching sensors:', err.message);
+                logger.error('Error fetching sensors:', err.message);
                 return res.status(500).json({ error: 'Failed to fetch sensors' });
             }
             res.status(200).json({ sensors: rows });
@@ -161,7 +164,7 @@ const createSensorRoutes = (db: sqlite3.Database): express.Router => {
 
         db.run('INSERT INTO sensors (name, deviceID) VALUES (?, ?)', [name, deviceID], function (err) {
             if (err) {
-                console.error('Error adding sensor:', err.message);
+                logger.error('Error adding sensor:', err.message);
                 return res.status(500).json({ error: 'Failed to add sensor' });
             }
             res.status(201).json({ id: this.lastID, name, deviceID });
@@ -173,7 +176,7 @@ const createSensorRoutes = (db: sqlite3.Database): express.Router => {
         const { id } = req.params;
         db.run('DELETE FROM sensors WHERE id = ?', [id], function (err) {
             if (err) {
-                console.error('Error deleting sensor:', err.message);
+                logger.error('Error deleting sensor:', err.message);
                 return res.status(500).json({ error: 'Failed to delete sensor' });
             }
             if (this.changes === 0) {

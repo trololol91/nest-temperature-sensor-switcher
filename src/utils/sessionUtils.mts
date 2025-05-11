@@ -3,11 +3,8 @@ import path from 'path';
 import { BrowserContext } from 'playwright';
 import { fileURLToPath } from 'url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Session file path in root directory
-const SESSION_FILE_PATH = path.resolve(__dirname, '../../session.json');
+// Replace __dirname with a dynamic resolution
+const SESSION_FILE_PATH = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../session.json');
 
 export async function saveSession(cookies: Array<{ name: string; value: string; domain: string; path: string; expires: number; httpOnly: boolean; secure: boolean; sameSite: string; }>): Promise<void> {
     fs.writeFileSync(SESSION_FILE_PATH, JSON.stringify(cookies, null, 2));
