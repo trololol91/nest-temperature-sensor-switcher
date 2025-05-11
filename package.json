@@ -10,7 +10,8 @@
     "start:watch": "tsx watch src/server.mts",
     "login": "tsx src/scripts/login.mts",
     "test": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "prepare": "husky"
   },
   "type": "module",
   "author": "",
