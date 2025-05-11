@@ -3,7 +3,7 @@ import { createNamedLogger } from '../utils/logger.mjs';
 
 const logger = createNamedLogger('Database');
 
-const db = new sqlite3.Database('encrypted-sensors.db', (err) => {
+const db = new sqlite3.Database('resource/encrypted-sensors.db', (err) => {
     if (err) {
         logger.error('Error opening database:', err.message);
     } else {

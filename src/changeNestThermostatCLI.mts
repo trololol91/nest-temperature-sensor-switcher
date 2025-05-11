@@ -4,7 +4,7 @@ import { changeNestThermostat } from './scripts/changeNestThermostat.mjs';
 import sqlite3 from 'sqlite3';
 
 // Initialize SQLite database
-const db = new sqlite3.Database('encrypted-sensors.db');
+const db = new sqlite3.Database('resource/encrypted-sensors.db');
 
 // Parse command-line arguments
 const argv = await yargs(hideBin(process.argv))

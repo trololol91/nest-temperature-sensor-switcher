@@ -7,8 +7,9 @@
 
 session.json
 
-# Ignore screenshots directory
+# Ignore directories
 screenshots/
+resource/
 
 # Ignore database files
 *.db
