@@ -36,6 +36,59 @@ The Nest Temperature Sensor Switcher is a TypeScript-based project designed to m
 - **Login Script**: `npm run login`
 - **Change Thermostat**: `npm run change-thermostat`
 
+## Adding Sensors and Configuring Thermostat
+
+### Setting the Thermostat ID
+
+1. Open the `.env` file in the root directory.
+2. Add or update the `THERMOSTAT_ID` variable with the ID of your thermostat. For example:
+   ```env
+   THERMOSTAT_ID=DEVICE_CCA7C100002935B9
+   ```
+
+### Using Docker Compose to Set THERMOSTAT_ID
+
+You can configure the `THERMOSTAT_ID` environment variable directly in the `docker-compose.yml` file. Follow these steps:
+
+1. Open the `docker-compose.yml` file in the root directory.
+2. Locate the `environment` section under the `app` service.
+3. Update the `THERMOSTAT_ID` variable with your thermostat ID. For example:
+   ```yaml
+   environment:
+     - NODE_ENV=production
+     - THERMOSTAT_ID=DEVICE_CCA7C100002935B9
+     - LOG_LEVEL=info
+   ```
+
+4. Start the application using Docker Compose:
+   ```bash
+   docker-compose up --build
+   ```
+
+This will build and start the application with the specified thermostat ID.
+
+### Adding Sensors to the Database
+
+You can add sensors to the database using the `/sensors` POST API route. Follow these steps:
+
+1. Start the application using `npm start`.
+2. Use a tool like `curl` or Postman to send a POST request to `http://localhost:<PORT>/api/sensors`.
+3. The request body should include the `name` and `deviceID` of the sensor. For example:
+   ```json
+   {
+     "name": "Living Room Sensor",
+     "deviceID": "SENSOR_123456789"
+   }
+   ```
+4. If the request is successful, the API will return the ID of the newly added sensor.
+
+Example `curl` command:
+```bash
+curl -X POST http://localhost:3000/api/sensors \
+-H "Content-Type: application/json" \
+-d '{"name": "Living Room Sensor", "deviceID": "SENSOR_123456789"}'
+```
+
 ## Folder Structure
 
 - `src/`
