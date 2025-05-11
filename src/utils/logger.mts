@@ -15,12 +15,13 @@
 import path from 'path';
 import { createLogger, format, transports } from 'winston';
 import { fileURLToPath } from 'url';
+import { DEFAULT_LOG_FILE_NAME } from 'constants.mjs';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
 // Replace __dirname with a dynamic resolution
-const LOG_FILE_PATH = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../logs/application.log');
+const LOG_FILE_PATH = path.resolve(path.dirname(fileURLToPath(import.meta.url)), `../../logs/${DEFAULT_LOG_FILE_NAME}`);
 
 const logLevel = process.env.LOG_LEVEL || 'info';
 

@@ -5,7 +5,6 @@
  * such as navigating to the page, selecting devices, and interacting with
  * temperature sensors.
  */
-import { DeviceConstants } from 'constants.mjs';
 import { Page, ElementHandle } from 'playwright';
 import { createNamedLogger } from '../utils/logger.mjs';
 
@@ -60,11 +59,11 @@ export class HomePage {
      * @param {string} href - The href value of the puck item to select.
      * @returns {Promise<ElementHandle | null>} A promise that resolves to the selected element or null if not found.
      */
-    public async selectPuckItemByHref(href: DeviceConstants): Promise<ElementHandle | null> {
-        const selector = `.puck-item a[href='${href}']`;
+    public async selectPuckItemByHref(thermostatId: string): Promise<ElementHandle | null> {
+        const selector = `.puck-item a[href='/thermostat/${thermostatId}']`;
         const element = await this.page.$(selector);
         if (!element) {
-            logger.error(`Element with href '${href}' not found.`);
+            logger.error(`Element with href '${thermostatId}' not found.`);
         }
         return element;
     }

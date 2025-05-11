@@ -2,7 +2,6 @@ import path from 'path';
 import { BrowserContext, chromium, Page } from 'playwright';
 import { HomePage } from 'page/homepage.page.mjs';
 import { fileURLToPath } from 'url';
-import { DeviceConstants } from 'constants.mjs';
 import { saveSession, restoreSession } from '../utils/session.mjs';
 import { takeScreenshotWithTimestamp } from '../utils/screenshot.mjs';
 import { createNamedLogger } from '../utils/logger.mjs';
@@ -54,8 +53,14 @@ export async function changeNestThermostat(deviceID: string, headless: boolean):
         // Wait for the home icon label to be visible
         await homePage.waitForHomeIconLabelVisible({ timeout: 10000 });
 
+        // Replace DeviceConstants.LivingRoomThermostat with THERMOSTAT_ID from environment variables
+        const thermostatId = process.env.THERMOSTAT_ID;
+        if (!thermostatId) {
+            throw new Error('THERMOSTAT_ID environment variable is not set.');
+        }
+
         // Click on thermostat puck item
-        const thermostatItem = await homePage.selectPuckItemByHref(DeviceConstants.LivingRoomThermostat);
+        const thermostatItem = await homePage.selectPuckItemByHref(thermostatId);
         await thermostatItem.click();
 
         // Wait for the thermostat setting button to be visible
