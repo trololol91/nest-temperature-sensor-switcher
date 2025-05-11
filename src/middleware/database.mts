@@ -18,7 +18,7 @@ const db = new sqlite3.Database('resource/encrypted-sensors.db', (err) => {
             if (err) {
                 logger.error('Error creating sensors table:', err.message);
             } else {
-                logger.info('Sensors table created successfully.');
+                logger.info('Sensors table created or already exists.');
             }
         });
     }
