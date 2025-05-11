@@ -12,6 +12,6 @@ services:
       - THERMOSTAT_ID=your_thermostat_id # Replace with your actual thermostat ID
       - LOG_LEVEL=info
     volumes:
-      - .:/usr/src/app
       - ./logs:/usr/src/app/logs
+      - ./resource:/usr/src/app/resource
     command: ["npm", "run", "start"]

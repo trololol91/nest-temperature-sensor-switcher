@@ -1,9 +1,19 @@
 import sqlite3 from 'sqlite3';
 import { createNamedLogger } from 'utils/logger.mts';
+import fs from 'fs';
+import path from 'path';
+import { getProjectRoot } from 'constants.mts';
 
 const logger = createNamedLogger('Database');
 
-const db = new sqlite3.Database('resource/encrypted-sensors.db', (err) => {
+// Ensure the 'resource' directory exists in the root of the project
+const resourceDir = path.resolve(getProjectRoot(), 'resource');
+if (!fs.existsSync(resourceDir)) {
+    fs.mkdirSync(resourceDir);
+    logger.info(`Created 'resource' directory at ${resourceDir}`);
+}
+
+const db = new sqlite3.Database(path.join(resourceDir, 'encrypted-sensors.db'), (err) => {
     if (err) {
         logger.error('Error opening database:', err.message);
     } else {

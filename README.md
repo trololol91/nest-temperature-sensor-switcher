@@ -46,8 +46,9 @@ The Nest Temperature Sensor Switcher is a TypeScript-based project designed to m
    THERMOSTAT_ID=DEVICE_CCA7C100002935B9
    ```
 
-### Using Docker Compose to Set THERMOSTAT_ID
+### Using Docker Compose
 
+#### Set THERMOSTAT_ID
 You can configure the `THERMOSTAT_ID` environment variable directly in the `docker-compose.yml` file. Follow these steps:
 
 1. Open the `docker-compose.yml` file in the root directory.
