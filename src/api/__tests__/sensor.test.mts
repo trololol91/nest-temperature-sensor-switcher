@@ -4,6 +4,10 @@ import request from 'supertest';
 import createSensorRoutes from 'api/sensor.mts';
 import { Database } from 'sqlite3';
 
+vi.mock('scripts/changeNestThermostat.mts', () => ({
+    changeNestThermostat: vi.fn().mockResolvedValue(undefined),
+}));
+
 vi.mock('sqlite3', () => {
     const Database = vi.fn();
     Database.prototype.get = vi.fn();
@@ -11,10 +15,6 @@ vi.mock('sqlite3', () => {
     Database.prototype.run = vi.fn();
     return { Database };
 });
-
-vi.mock('scripts/changeNestThermostat.mts', () => ({
-    changeNestThermostat: vi.fn().mockResolvedValue(undefined),
-}));
 
 describe('Sensor Routes', () => {
     let db;
@@ -79,6 +79,97 @@ describe('Sensor Routes', () => {
         const response = await request(app).get('/api/sensors');
         expect(response.status).toBe(500);
         expect(response.body).toEqual({ error: 'Failed to fetch sensors' });
+    });
+
+    it('should return 200 and a list of sensor names for /sensor-names', async () => {
+        db.all.mockImplementation((_, __, callback) => callback(null, [
+            { name: 'Sensor1' },
+            { name: 'Sensor2' }
+        ]));
+
+        const response = await request(app).get('/api/sensor-names');
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual({
+            sensorNames: ['Sensor1', 'Sensor2']
+        });
+    });
+
+    it('should return 500 if there is a database error in /sensor-names', async () => {
+        db.all.mockImplementation((_, __, callback) => callback(new Error('Database error')));
+
+        const response = await request(app).get('/api/sensor-names');
+        expect(response.status).toBe(500);
+        expect(response.body).toEqual({ error: 'Failed to fetch sensor names' });
+    });
+
+    it('should return 201 and the created sensor for /sensors', async () => {
+        db.run.mockImplementation(function (_: string, __: unknown[], callback: (err: Error | null) => void) {
+            this.lastID = 1; // Mock the last inserted ID
+            callback.bind(this)(null); // Call the callback with null error
+        });
+
+        const response = await request(app).post('/api/sensors').send({
+            name: 'Sensor1',
+            deviceID: '12345'
+        });
+
+        expect(response.status).toBe(201);
+        expect(response.body).toEqual({
+            id: 1,
+            name: 'Sensor1',
+            deviceID: '12345'
+        });
+    });
+
+    it('should return 400 if name or deviceID is missing in /sensors', async () => {
+        const response = await request(app).post('/api/sensors').send({
+            name: 'Sensor1'
+        });
+
+        expect(response.status).toBe(400);
+        expect(response.body).toEqual({ error: 'Missing name or deviceID' });
+    });
+
+    it('should return 500 if there is a database error in /sensors', async () => {
+        db.run.mockImplementation((_, __, callback) => callback(new Error('Database error')));
+
+        const response = await request(app).post('/api/sensors').send({
+            name: 'Sensor1',
+            deviceID: '12345'
+        });
+
+        expect(response.status).toBe(500);
+        expect(response.body).toEqual({ error: 'Failed to add sensor' });
+    });
+
+    it('should return 200 if sensor is successfully deleted in /sensors/:id', async () => {
+        db.run.mockImplementation(function (_: string, __: unknown[], callback: (err: Error | null) => void) {
+            this.changes = 1; // Mock the number of changes
+            callback.bind(this)(null); // Call the callback with null error
+        });
+
+        const response = await request(app).delete('/api/sensors/1');
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual({ message: 'Sensor deleted successfully' });
+    });
+
+    it('should return 404 if sensor does not exist in /sensors/:id', async () => {
+        db.run.mockImplementation(function (_: string, __: unknown[], callback: (err: Error | null) => void) {
+            this.changes = 0; // Mock the number of changes
+            callback.bind(this)(null); // Call the callback with null error
+        });
+
+        const response = await request(app).delete('/api/sensors/999');
+        expect(response.status).toBe(404);
+        expect(response.body).toEqual({ error: 'Sensor not found' });
+    });
+
+    it('should return 500 if there is a database error in /sensors/:id', async () => {
+        db.run.mockImplementation((_, __, callback) => callback(new Error('Database error')));
+
+        const response = await request(app).delete('/api/sensors/1');
+        expect(response.status).toBe(500);
+        expect(response.body).toEqual({ error: 'Failed to delete sensor' });
     });
 });
 
