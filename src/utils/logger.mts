@@ -14,14 +14,12 @@
 
 import path from 'path';
 import { createLogger, format, transports } from 'winston';
-import { fileURLToPath } from 'url';
-import { DEFAULT_LOG_FILE_NAME } from 'constants.mjs';
+import { DEFAULT_LOG_FILE_NAME, LOG_DIR } from 'constants.mjs';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Replace __dirname with a dynamic resolution
-const LOG_FILE_PATH = path.resolve(path.dirname(fileURLToPath(import.meta.url)), `../../logs/${DEFAULT_LOG_FILE_NAME}`);
+const LOG_FILE_PATH = path.join(LOG_DIR, DEFAULT_LOG_FILE_NAME);
 
 const logLevel = process.env.LOG_LEVEL || 'info';
 
@@ -63,7 +61,7 @@ export const createNamedLogger = (name: string, fileName: string = 'application'
         format.printf(({ timestamp, level, message, label }) => `${timestamp} [${label}] [${level.toUpperCase()}]: ${message}`)
     ),
     transports: [
-        new transports.File({ filename: path.resolve(path.dirname(fileURLToPath(import.meta.url)), `../../logs/${fileName}.log`) }),
+        new transports.File({ filename: path.join(LOG_DIR, `${fileName}.log`) }),
         new transports.Console()
     ]
 });

@@ -1,12 +1,12 @@
 import fs from 'fs';
 import path from 'path';
 import { BrowserContext } from 'playwright';
-import { fileURLToPath } from 'url';
 import { getEncryptionKey, encrypt, decrypt } from './crypto.mjs';
 import { createNamedLogger } from './logger.mjs';
+import { getProjectRoot } from 'constants.mjs';
 
-// Replace __dirname with a dynamic resolution
-const SESSION_FILE_PATH = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../resource/session');
+// Update SESSION_FILE_PATH to use getProjectRoot
+const SESSION_FILE_PATH = path.resolve(getProjectRoot(), 'resource/session');
 
 const ENCRYPTION_KEY = getEncryptionKey();
 const logger = createNamedLogger('SessionUtils');

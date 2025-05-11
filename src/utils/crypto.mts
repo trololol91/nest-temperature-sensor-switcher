@@ -1,14 +1,19 @@
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import { createNamedLogger } from './logger.mjs';
-import { ENCRYPTION_KEY_FILE_NAME } from 'constants.mjs';
+import { ENCRYPTION_KEY_FILE_NAME, getProjectRoot } from 'constants.mjs';
 
 const logger = createNamedLogger('CryptoUtils');
 
-const ENCRYPTION_KEY_FILE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), `../../resource/${ENCRYPTION_KEY_FILE_NAME}`);
+const ENCRYPTION_KEY_FILE = path.resolve(getProjectRoot(), `resource/${ENCRYPTION_KEY_FILE_NAME}`);
 const IV_LENGTH = 12; // AES-GCM standard IV length
+
+// Ensure the directory for the encryption key exists
+const encryptionKeyDir = path.dirname(ENCRYPTION_KEY_FILE);
+if (!fs.existsSync(encryptionKeyDir)) {
+    fs.mkdirSync(encryptionKeyDir, { recursive: true });
+}
 
 /**
  * Generates or retrieves the encryption key used for AES-256-GCM encryption.

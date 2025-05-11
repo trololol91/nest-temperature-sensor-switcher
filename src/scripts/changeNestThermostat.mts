@@ -1,14 +1,10 @@
-import path from 'path';
 import { BrowserContext, chromium, Page } from 'playwright';
 import { HomePage } from 'page/homepage.page.mjs';
-import { fileURLToPath } from 'url';
 import { saveSession, restoreSession } from '../utils/session.mjs';
 import { takeScreenshotWithTimestamp } from '../utils/screenshot.mjs';
 import { createNamedLogger } from '../utils/logger.mjs';
 
 const logger = createNamedLogger('ChangeNestThermostatScript');
-
-const SCREENSHOTS_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../screenshots');
 
 /**
  * Changes the selected Nest thermostat to the specified device ID.
@@ -84,8 +80,7 @@ export async function changeNestThermostat(deviceID: string, headless: boolean):
     } catch (error) {
         // Take a screenshot with a timestamp
         if (page) {
-            await takeScreenshotWithTimestamp(page, SCREENSHOTS_DIR);
-            logger.error(`Screenshot saved to ${SCREENSHOTS_DIR}`);
+            await takeScreenshotWithTimestamp(page);
         } else {
             logger.error('Page object is not available for taking a screenshot.');
         }
