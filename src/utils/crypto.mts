@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
-import { createNamedLogger } from './logger.mts';
+import { createNamedLogger } from 'utils/logger.mts';
 import { ENCRYPTION_KEY_FILE_NAME, getProjectRoot } from 'constants.mts';
 
 const logger = createNamedLogger('CryptoUtils');

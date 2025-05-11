@@ -15,7 +15,7 @@
  */
 
 import { chromium } from 'playwright';
-import { restoreSession, saveSession } from '../utils/session.mts';
+import { restoreSession, saveSession } from 'utils/session.mts';
 import { HomePage } from 'page/homepage.page.mts';
 import {createInterface} from 'node:readline/promises';
 import {createNamedLogger} from 'utils/logger.mts';

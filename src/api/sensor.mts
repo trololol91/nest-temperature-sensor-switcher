@@ -1,7 +1,7 @@
 import express from 'express';
-import { changeNestThermostat } from 'scripts/changeNestThermostat.mts';
 import sqlite3 from 'sqlite3';
-import { createNamedLogger } from '../utils/logger.mts';
+import { changeNestThermostat } from 'scripts/changeNestThermostat.mts';
+import { createNamedLogger } from 'utils/logger.mts';
 
 const logger = createNamedLogger('SensorRoutes');
 

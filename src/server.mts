@@ -2,9 +2,9 @@ import express from 'express';
 import dotenv from 'dotenv';
 import swaggerUi from 'swagger-ui-express';
 import swaggerJsDoc from 'swagger-jsdoc';
-import db from './middleware/database.mts';
-import createSensorRoutes from './api/sensor.mts';
-import { createNamedLogger } from './utils/logger.mts';
+import db from 'middleware/database.mts';
+import createSensorRoutes from 'api/sensor.mts';
+import { createNamedLogger } from 'utils/logger.mts';
 
 const logger = createNamedLogger('Server');
 

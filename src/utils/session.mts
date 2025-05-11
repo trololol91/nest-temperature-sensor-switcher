@@ -1,8 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 import { BrowserContext } from 'playwright';
-import { getEncryptionKey, encrypt, decrypt } from './crypto.mts';
-import { createNamedLogger } from './logger.mts';
+import { getEncryptionKey, encrypt, decrypt } from 'utils/crypto.mts';
+import { createNamedLogger } from 'utils/logger.mts';
 import { getProjectRoot } from 'constants.mts';
 
 // Update SESSION_FILE_PATH to use getProjectRoot
