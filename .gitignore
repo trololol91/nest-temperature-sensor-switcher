@@ -5,8 +5,6 @@
 /logs
 /dist
 
-session.json
-
 # Ignore directories
 screenshots/
 resource/

@@ -7,7 +7,8 @@
     "lint:eslint": "eslint --quiet --fix",
     "cli": "tsx src/changeNestThermostatCLI.mts",
     "start": "tsx src/server.mts",
-    "start:watch": "tsx watch src/server.mts"
+    "start:watch": "tsx watch src/server.mts",
+    "login": "tsx src/scripts/login.mts"
   },
   "type": "module",
   "author": "",

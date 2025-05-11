@@ -23,7 +23,7 @@ export const logger = createLogger({
     ]
 });
 
-export const createNamedLogger = (name: string): ReturnType<typeof createLogger> => createLogger({
+export const createNamedLogger = (name: string, fileName: string = 'application'): ReturnType<typeof createLogger> => createLogger({
     level: logLevel,
     format: format.combine(
         format.label({ label: name }),
@@ -31,7 +31,7 @@ export const createNamedLogger = (name: string): ReturnType<typeof createLogger>
         format.printf(({ timestamp, level, message, label }) => `${timestamp} [${label}] [${level.toUpperCase()}]: ${message}`)
     ),
     transports: [
-        new transports.File({ filename: LOG_FILE_PATH }),
+        new transports.File({ filename: path.resolve(path.dirname(fileURLToPath(import.meta.url)), `../../logs/${fileName}.log`) }),
         new transports.Console()
     ]
 });
