@@ -1,9 +1,9 @@
 import fs from 'fs';
 import path from 'path';
 import { BrowserContext } from 'playwright';
-import { getEncryptionKey, encrypt, decrypt } from './crypto.mjs';
-import { createNamedLogger } from './logger.mjs';
-import { getProjectRoot } from 'constants.mjs';
+import { getEncryptionKey, encrypt, decrypt } from './crypto.mts';
+import { createNamedLogger } from './logger.mts';
+import { getProjectRoot } from 'constants.mts';
 
 // Update SESSION_FILE_PATH to use getProjectRoot
 const SESSION_FILE_PATH = path.resolve(getProjectRoot(), 'resource/session');

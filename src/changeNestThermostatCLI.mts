@@ -7,9 +7,9 @@
  */
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
-import { changeNestThermostat } from './scripts/changeNestThermostat.mjs';
+import { changeNestThermostat } from './scripts/changeNestThermostat.mts';
 import sqlite3 from 'sqlite3';
-import { createNamedLogger } from './utils/logger.mjs'; // Fixed the logger import path
+import { createNamedLogger } from './utils/logger.mts'; // Fixed the logger import path
 
 const logger = createNamedLogger('ChangeNestThermostatCLI');
 

@@ -14,7 +14,7 @@
 
 import path from 'path';
 import { createLogger, format, transports } from 'winston';
-import { DEFAULT_LOG_FILE_NAME, LOG_DIR } from 'constants.mjs';
+import { DEFAULT_LOG_FILE_NAME, LOG_DIR } from 'constants.mts';
 import dotenv from 'dotenv';
 
 dotenv.config();

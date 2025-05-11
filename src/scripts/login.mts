@@ -15,10 +15,10 @@
  */
 
 import { chromium } from 'playwright';
-import { restoreSession, saveSession } from '../utils/session.mjs';
-import { HomePage } from 'page/homepage.page.mjs';
+import { restoreSession, saveSession } from '../utils/session.mts';
+import { HomePage } from 'page/homepage.page.mts';
 import {createInterface} from 'node:readline/promises';
-import {createNamedLogger} from 'utils/logger.mjs';
+import {createNamedLogger} from 'utils/logger.mts';
 
 const logger = createNamedLogger('LoginScript', 'login');
 

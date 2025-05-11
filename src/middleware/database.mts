@@ -1,5 +1,5 @@
 import sqlite3 from 'sqlite3';
-import { createNamedLogger } from '../utils/logger.mjs';
+import { createNamedLogger } from '../utils/logger.mts';
 
 const logger = createNamedLogger('Database');
 

@@ -6,8 +6,8 @@
  */
 import path from 'path';
 import { Page } from 'playwright';
-import { createNamedLogger } from './logger.mjs';
-import { LOG_DIR } from 'constants.mjs';
+import { createNamedLogger } from './logger.mts';
+import { LOG_DIR } from 'constants.mts';
 
 const logger = createNamedLogger('ScreenshotUtils');
 

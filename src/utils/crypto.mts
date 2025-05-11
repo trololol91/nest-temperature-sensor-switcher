@@ -1,8 +1,8 @@
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
-import { createNamedLogger } from './logger.mjs';
-import { ENCRYPTION_KEY_FILE_NAME, getProjectRoot } from 'constants.mjs';
+import { createNamedLogger } from './logger.mts';
+import { ENCRYPTION_KEY_FILE_NAME, getProjectRoot } from 'constants.mts';
 
 const logger = createNamedLogger('CryptoUtils');
 

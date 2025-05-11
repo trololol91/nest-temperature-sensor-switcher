@@ -1,8 +1,8 @@
 import { BrowserContext, chromium, Page } from 'playwright';
-import { HomePage } from 'page/homepage.page.mjs';
-import { saveSession, restoreSession } from '../utils/session.mjs';
-import { takeScreenshotWithTimestamp } from '../utils/screenshot.mjs';
-import { createNamedLogger } from '../utils/logger.mjs';
+import { HomePage } from 'page/homepage.page.mts';
+import { saveSession, restoreSession } from '../utils/session.mts';
+import { takeScreenshotWithTimestamp } from '../utils/screenshot.mts';
+import { createNamedLogger } from '../utils/logger.mts';
 
 const logger = createNamedLogger('ChangeNestThermostatScript');
 

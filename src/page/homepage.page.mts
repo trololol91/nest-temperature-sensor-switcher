@@ -6,7 +6,7 @@
  * temperature sensors.
  */
 import { Page, ElementHandle } from 'playwright';
-import { createNamedLogger } from '../utils/logger.mjs';
+import { createNamedLogger } from '../utils/logger.mts';
 
 const logger = createNamedLogger('HomePage');
 

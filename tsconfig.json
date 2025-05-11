@@ -17,6 +17,8 @@
     "noUnusedParameters": true,
     "noImplicitThis": false,
     "strictNullChecks": false,
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
     "baseUrl": "src",
     "paths": {
       "helper/*": [
