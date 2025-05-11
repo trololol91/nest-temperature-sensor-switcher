@@ -6,8 +6,10 @@
 /dist
 
 # Ignore directories
-screenshots/
-resource/
+/screenshots
+/resource
+/coverage
+
 
 # Ignore database files
 *.db

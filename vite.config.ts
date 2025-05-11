@@ -6,8 +6,8 @@ export default defineConfig({
   test: {
     coverage: {
       provider: 'v8',
-      exclude: ['src/api/__tests__/utils/*'],
-      include: ['src/api/**/*.{mts}'],
+      include: ['src/api/**/*.{mts,ts}'],
+      reporter: ['text', 'json', 'html'],
     },
-  }
+  },
 });

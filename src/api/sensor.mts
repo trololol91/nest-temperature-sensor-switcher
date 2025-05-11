@@ -109,25 +109,30 @@ const createSensorRoutes = (db: sqlite3.Database): express.Router => {
     router.post('/change-sensor', async (req, res) => {
         const { sensorName } = req.body;
         if (!sensorName) {
-            return res.status(400).json({ error: 'Missing sensorName' });
+            res.status(400).json({ error: 'Missing sensorName' });
+            return; 
         }
 
         // Fetch deviceID from the database based on sensorName
         db.get('SELECT deviceID FROM sensors WHERE name = ?', [sensorName], async (err, row: { deviceID: string } | undefined) => {
             if (err) {
                 logger.error('Error fetching sensor from database:', err.message);
-                return res.status(500).json({ error: 'Failed to fetch sensor' });
+                res.status(500).json({ error: 'Failed to fetch sensor' });
+                return;
             }
             if (!row) {
-                return res.status(404).json({ error: 'Sensor not found' });
+                res.status(404).json({ error: 'Sensor not found' });
+                return;
             }
 
             try {
                 await changeNestThermostat(row.deviceID, true); // Assuming headless mode
                 res.status(200).json({ message: `Temperature sensor changed to sensorName: ${sensorName}` });
+                return;
             } catch (error) {
                 logger.error('Error changing temperature sensor:', error);
                 res.status(500).json({ error: 'Failed to change temperature sensor' });
+                return;
             }
         });
     });
@@ -137,10 +142,12 @@ const createSensorRoutes = (db: sqlite3.Database): express.Router => {
         db.all<{ name: string }>('SELECT name FROM sensors', [], (err, rows) => {
             if (err) {
                 logger.error('Error fetching sensor names:', err.message);
-                return res.status(500).json({ error: 'Failed to fetch sensor names' });
+                res.status(500).json({ error: 'Failed to fetch sensor names' });
+                return; 
             }
             const sensorNames = rows.map(row => row.name);
             res.status(200).json({ sensorNames });
+            return; 
         });
     });
 
@@ -149,9 +156,11 @@ const createSensorRoutes = (db: sqlite3.Database): express.Router => {
         db.all('SELECT * FROM sensors', [], (err, rows) => {
             if (err) {
                 logger.error('Error fetching sensors:', err.message);
-                return res.status(500).json({ error: 'Failed to fetch sensors' });
+                res.status(500).json({ error: 'Failed to fetch sensors' });
+                return; 
             }
             res.status(200).json({ sensors: rows });
+            return; 
         });
     });
 
@@ -159,15 +168,18 @@ const createSensorRoutes = (db: sqlite3.Database): express.Router => {
     router.post('/sensors', (req, res) => {
         const { name, deviceID } = req.body;
         if (!name || !deviceID) {
-            return res.status(400).json({ error: 'Missing name or deviceID' });
+            res.status(400).json({ error: 'Missing name or deviceID' });
+            return; 
         }
 
         db.run('INSERT INTO sensors (name, deviceID) VALUES (?, ?)', [name, deviceID], function (err) {
             if (err) {
                 logger.error('Error adding sensor:', err.message);
-                return res.status(500).json({ error: 'Failed to add sensor' });
+                res.status(500).json({ error: 'Failed to add sensor' });
+                return; 
             }
             res.status(201).json({ id: this.lastID, name, deviceID });
+            return; 
         });
     });
 
@@ -177,12 +189,15 @@ const createSensorRoutes = (db: sqlite3.Database): express.Router => {
         db.run('DELETE FROM sensors WHERE id = ?', [id], function (err) {
             if (err) {
                 logger.error('Error deleting sensor:', err.message);
-                return res.status(500).json({ error: 'Failed to delete sensor' });
+                res.status(500).json({ error: 'Failed to delete sensor' });
+                return; 
             }
             if (this.changes === 0) {
-                return res.status(404).json({ error: 'Sensor not found' });
+                res.status(404).json({ error: 'Sensor not found' });
+                return; 
             }
             res.status(200).json({ message: 'Sensor deleted successfully' });
+            return; 
         });
     });
 
