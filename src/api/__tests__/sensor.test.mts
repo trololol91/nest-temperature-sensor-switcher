@@ -8,6 +8,14 @@ vi.mock('scripts/changeNestThermostat.mts', () => ({
     changeNestThermostat: vi.fn().mockResolvedValue(undefined),
 }));
 
+vi.mock('middleware/database.mts', () => ({
+    default: {
+        get: vi.fn((_, __, callback) => callback(null, undefined)),
+        all: vi.fn((_, __, callback) => callback(null, [])),
+        run: vi.fn((_, __, callback) => callback(null)),
+    },
+}));
+
 vi.mock('middleware/auth.mts', () => ({
     authenticate: (req, _res, next): void => {
         // Mock authentication middleware
