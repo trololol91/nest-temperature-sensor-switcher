@@ -13,24 +13,12 @@ if (!fs.existsSync(resourceDir)) {
     logger.info(`Created 'resource' directory at ${resourceDir}`);
 }
 
-const db = new sqlite3.Database(path.join(resourceDir, 'encrypted-sensors.db'), (err) => {
+const dbPath = path.resolve(getProjectRoot(), 'resource', 'encrypted-sensors.db');
+const db = new sqlite3.Database(dbPath, (err) => {
     if (err) {
         logger.error('Error opening database:', err.message);
     } else {
-        logger.info('Connected to the encrypted SQLite database.');
-
-        // Create a table for sensors
-        db.run(`CREATE TABLE IF NOT EXISTS sensors (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            deviceID TEXT NOT NULL
-        )`, (err) => {
-            if (err) {
-                logger.error('Error creating sensors table:', err.message);
-            } else {
-                logger.info('Sensors table created or already exists.');
-            }
-        });
+        logger.info('Connected to the SQLite database.');
     }
 });
 

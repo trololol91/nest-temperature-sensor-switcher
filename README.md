@@ -68,6 +68,52 @@ You can configure the `THERMOSTAT_ID` environment variable directly in the `dock
 
 This will build and start the application with the specified thermostat ID.
 
+#### Set SECRET_KEY Securely
+It is recommended to store sensitive information like `SECRET_KEY` in your machine's environment variables instead of directly in the `docker-compose.yml` file. Follow these steps:
+
+1. Set the `SECRET_KEY` environment variable on your machine:
+   - **Linux/macOS**:
+     ```bash
+     export SECRET_KEY=your_secret_key
+     ```
+   - **Windows (Command Prompt)**:
+     ```cmd
+     set SECRET_KEY=your_secret_key
+     ```
+   - **Windows (PowerShell)**:
+     ```powershell
+     $env:SECRET_KEY="your_secret_key"
+     ```
+
+2. Reference the `SECRET_KEY` in the `docker-compose.yml` file:
+   ```yaml
+   environment:
+     - NODE_ENV=production
+     - THERMOSTAT_ID=your_thermostat_id
+     - LOG_LEVEL=info
+     - SECRET_KEY=${SECRET_KEY}
+   ```
+
+3. Start the application using Docker Compose:
+   ```bash
+   docker-compose up --build
+   ```
+
+This approach ensures that the `SECRET_KEY` is not exposed in version control or shared files.
+
+### Generating a Secure SECRET_KEY
+
+To generate a secure `SECRET_KEY`, you can use the following method:
+
+1. **Using OpenSSL**:
+   If you have OpenSSL installed, run the following command:
+   ```bash
+   openssl rand -hex 32
+   ```
+   This will generate a 256-bit (32-byte) random key in hexadecimal format.
+
+Store the generated key securely, such as in an environment variable or a secrets manager, and avoid hardcoding it in your source code.
+
 ### Adding Sensors to the Database
 
 You can add sensors to the database using the `/sensors` POST API route. Follow these steps:
