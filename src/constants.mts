@@ -6,6 +6,7 @@ dotenv.config();
 
 export const ENCRYPTION_KEY_FILE_NAME = 'encryption-key';
 export const DEFAULT_LOG_FILE_NAME = 'application.log';
+export const SECRET_KEY = process.env.JWT_SECRET || 'default_secret_key';
 
 /**
  * Utility function to obtain the root path of the project.

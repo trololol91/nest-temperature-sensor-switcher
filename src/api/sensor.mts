@@ -1,15 +1,35 @@
 import express from 'express';
-import sqlite3 from 'sqlite3';
+import { authenticate } from 'middleware/auth.mts';
+import db from 'middleware/database.mts';
 import { changeNestThermostat } from 'scripts/changeNestThermostat.mts';
 import { createNamedLogger } from 'utils/logger.mts';
 
+const router = express.Router();
 const logger = createNamedLogger('SensorRoutes');
+
+// Apply authentication middleware to all routes
+router.use(authenticate);
 
 /**
  * @swagger
- * /api/change-sensor:
+ * components:
+ *   securitySchemes:
+ *     bearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
+ *
+ * security:
+ *   - bearerAuth: []
+ */
+
+/**
+ * @swagger
+ * /api/sensor/change-sensor:
  *   post:
  *     summary: Change the active temperature sensor.
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -33,9 +53,11 @@ const logger = createNamedLogger('SensorRoutes');
 
 /**
  * @swagger
- * /api/sensor-names:
+ * /api/sensor/sensor-names:
  *   get:
  *     summary: Get a list of all sensor names.
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: A list of sensor names.
@@ -45,9 +67,11 @@ const logger = createNamedLogger('SensorRoutes');
 
 /**
  * @swagger
- * /api/sensors:
+ * /api/sensor:
  *   get:
  *     summary: Get a list of all sensors.
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: A list of sensors.
@@ -57,9 +81,11 @@ const logger = createNamedLogger('SensorRoutes');
 
 /**
  * @swagger
- * /api/sensors:
+ * /api/sensor:
  *   post:
  *     summary: Add a new sensor.
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -84,9 +110,11 @@ const logger = createNamedLogger('SensorRoutes');
 
 /**
  * @swagger
- * /api/sensors/{id}:
+ * /api/sensor/{id}:
  *   delete:
  *     summary: Delete a sensor by ID.
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -103,105 +131,93 @@ const logger = createNamedLogger('SensorRoutes');
  *         description: Failed to delete the sensor.
  */
 
-const createSensorRoutes = (db: sqlite3.Database): express.Router => {
-    const router = express.Router();
+// POST route to change the active temperature sensor
+router.post('/change-sensor', async (req, res) => {
+    const { sensorName } = req.body;
+    if (!sensorName) {
+        res.status(400).json({ error: 'Missing sensorName' });
+        return;
+    }
 
-    router.post('/change-sensor', async (req, res) => {
-        const { sensorName } = req.body;
-        if (!sensorName) {
-            res.status(400).json({ error: 'Missing sensorName' });
-            return; 
+    db.get('SELECT deviceID FROM sensors WHERE name = ?', [sensorName], async (err, row: { deviceID: string } | undefined) => {
+        if (err) {
+            logger.error('Error fetching sensor from database:', err.message);
+            res.status(500).json({ error: 'Failed to fetch sensor' });
+            return;
+        }
+        if (!row) {
+            res.status(404).json({ error: 'Sensor not found' });
+            return;
         }
 
-        // Fetch deviceID from the database based on sensorName
-        db.get('SELECT deviceID FROM sensors WHERE name = ?', [sensorName], async (err, row: { deviceID: string } | undefined) => {
-            if (err) {
-                logger.error('Error fetching sensor from database:', err.message);
-                res.status(500).json({ error: 'Failed to fetch sensor' });
-                return;
-            }
-            if (!row) {
-                res.status(404).json({ error: 'Sensor not found' });
-                return;
-            }
-
-            try {
-                await changeNestThermostat(row.deviceID, true); // Assuming headless mode
-                res.status(200).json({ message: `Temperature sensor changed to sensorName: ${sensorName}` });
-                return;
-            } catch (error) {
-                logger.error('Error changing temperature sensor:', error);
-                res.status(500).json({ error: 'Failed to change temperature sensor' });
-                return;
-            }
-        });
-    });
-
-    // GET route to list only sensor names
-    router.get('/sensor-names', (_req, res) => {
-        db.all<{ name: string }>('SELECT name FROM sensors', [], (err, rows) => {
-            if (err) {
-                logger.error('Error fetching sensor names:', err.message);
-                res.status(500).json({ error: 'Failed to fetch sensor names' });
-                return; 
-            }
-            const sensorNames = rows.map(row => row.name);
-            res.status(200).json({ sensorNames });
-            return; 
-        });
-    });
-
-    // GET route to fetch all sensors
-    router.get('/sensors', (_req, res) => {
-        db.all('SELECT * FROM sensors', [], (err, rows) => {
-            if (err) {
-                logger.error('Error fetching sensors:', err.message);
-                res.status(500).json({ error: 'Failed to fetch sensors' });
-                return; 
-            }
-            res.status(200).json({ sensors: rows });
-            return; 
-        });
-    });
-
-    // POST route to add a new sensor
-    router.post('/sensors', (req, res) => {
-        const { name, deviceID } = req.body;
-        if (!name || !deviceID) {
-            res.status(400).json({ error: 'Missing name or deviceID' });
-            return; 
+        try {
+            await changeNestThermostat(row.deviceID, true); // Assuming headless mode
+            res.status(200).json({ message: `Temperature sensor changed to sensorName: ${sensorName}` });
+        } catch (error) {
+            logger.error('Error changing temperature sensor:', error);
+            res.status(500).json({ error: 'Failed to change temperature sensor' });
         }
-
-        db.run('INSERT INTO sensors (name, deviceID) VALUES (?, ?)', [name, deviceID], function (err) {
-            if (err) {
-                logger.error('Error adding sensor:', err.message);
-                res.status(500).json({ error: 'Failed to add sensor' });
-                return; 
-            }
-            res.status(201).json({ id: this.lastID, name, deviceID });
-            return; 
-        });
     });
+});
 
-    // DELETE route to remove a sensor by ID
-    router.delete('/sensors/:id', (req, res) => {
-        const { id } = req.params;
-        db.run('DELETE FROM sensors WHERE id = ?', [id], function (err) {
-            if (err) {
-                logger.error('Error deleting sensor:', err.message);
-                res.status(500).json({ error: 'Failed to delete sensor' });
-                return; 
-            }
-            if (this.changes === 0) {
-                res.status(404).json({ error: 'Sensor not found' });
-                return; 
-            }
-            res.status(200).json({ message: 'Sensor deleted successfully' });
-            return; 
-        });
+// GET route to list only sensor names
+router.get('/sensor-names', (_req, res) => {
+    db.all<{ name: string }>('SELECT name FROM sensors', [], (err, rows) => {
+        if (err) {
+            logger.error('Error fetching sensor names:', err.message);
+            res.status(500).json({ error: 'Failed to fetch sensor names' });
+            return;
+        }
+        const sensorNames = rows.map(row => row.name);
+        res.status(200).json({ sensorNames });
     });
+});
 
-    return router;
-};
+// GET route to fetch all sensors
+router.get('/', (_req, res) => {
+    db.all('SELECT * FROM sensors', [], (err, rows) => {
+        if (err) {
+            logger.error('Error fetching sensors:', err.message);
+            res.status(500).json({ error: 'Failed to fetch sensors' });
+            return;
+        }
+        res.status(200).json({ sensors: rows });
+    });
+});
 
-export default createSensorRoutes;
+// POST route to add a new sensor
+router.post('/', (req, res) => {
+    const { name, deviceID } = req.body;
+    if (!name || !deviceID) {
+        res.status(400).json({ error: 'Missing name or deviceID' });
+        return;
+    }
+
+    db.run('INSERT INTO sensors (name, deviceID) VALUES (?, ?)', [name, deviceID], function (err) {
+        if (err) {
+            logger.error('Error adding sensor:', err.message);
+            res.status(500).json({ error: 'Failed to add sensor' });
+            return;
+        }
+        res.status(201).json({ id: this.lastID, name, deviceID });
+    });
+});
+
+// DELETE route to remove a sensor by ID
+router.delete('/:id', (req, res) => {
+    const { id } = req.params;
+    db.run('DELETE FROM sensors WHERE id = ?', [id], function (err) {
+        if (err) {
+            logger.error('Error deleting sensor:', err.message);
+            res.status(500).json({ error: 'Failed to delete sensor' });
+            return;
+        }
+        if (this.changes === 0) {
+            res.status(404).json({ error: 'Sensor not found' });
+            return;
+        }
+        res.status(200).json({ message: 'Sensor deleted successfully' });
+    });
+});
+
+export default router;
