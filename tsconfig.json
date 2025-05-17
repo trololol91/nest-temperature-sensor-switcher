@@ -24,6 +24,6 @@
         "types": ["node", "jest"],
         "baseUrl": "src",
     },
-    "include": ["src", "src/**/*.mts", "src/**/*.ts", "src/**/*.js", "tests", "*.mts", "*.ts"],
+    "include": ["src", "src/**/*.mts", "tests", "*.mts", "*.ts"],
     "exclude": ["node_modules", "dist", "coverage", "logs"]
 }

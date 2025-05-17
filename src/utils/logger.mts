@@ -21,7 +21,7 @@ dotenv.config();
 
 const LOG_FILE_PATH = path.join(LOG_DIR, DEFAULT_LOG_FILE_NAME);
 
-const logLevel = process.env.LOG_LEVEL || 'info';
+const logLevel = process.env.LOG_LEVEL ?? 'info';
 
 /**
  * Creates a Winston logger instance with the specified configuration.
@@ -35,6 +35,7 @@ export const logger = createLogger({
     level: logLevel,
     format: format.combine(
         format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         format.printf(({ timestamp, level, message }) => `${timestamp} [${level.toUpperCase()}]: ${message}`)
     ),
     transports: [
@@ -58,6 +59,7 @@ export const createNamedLogger = (name: string, fileName = 'application'): Retur
     format: format.combine(
         format.label({ label: name }),
         format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         format.printf(({ timestamp, level, message, label }) => `${timestamp} [${label}] [${level.toUpperCase()}]: ${message}`)
     ),
     transports: [

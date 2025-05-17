@@ -28,12 +28,10 @@ async function promptUntilDone(): Promise<void> {
         output: process.stdout
     });
 
-    while (true) {
-        const answer = await rl.question('Type in Done to finish: ');
-        if (answer.trim().toLowerCase() === 'done') {
-            break;
-        }
-    }
+    let answer: string;
+    do {
+        answer = await rl.question('Type in Done to finish: ');
+    } while (answer.trim().toLowerCase() !== 'done');
 }
 
 async function login(headless: boolean): Promise<void> {
@@ -87,7 +85,7 @@ void (async (): Promise<void> => {
     const headless = false;
     await login(headless);
     process.exit(0);
-})().catch(error => {
+})().catch((error: unknown) => {
     logger.error('Error during login:', error);
     process.exit(1);
 });

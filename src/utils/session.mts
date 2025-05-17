@@ -17,7 +17,7 @@ const logger = createNamedLogger('SessionUtils');
  * @param {Array} cookies - The cookies to save.
  * @returns {Promise<void>} - A promise that resolves when the session is saved.
  */
-export async function saveSession(cookies: { name: string, value: string, domain: string, path: string, expires: number, httpOnly: boolean, secure: boolean, sameSite: string }[]): Promise<void> {
+export function saveSession(cookies: { name: string, value: string, domain: string, path: string, expires: number, httpOnly: boolean, secure: boolean, sameSite: string }[]): void {
     const encryptedData = encrypt(JSON.stringify(cookies), ENCRYPTION_KEY);
     fs.writeFileSync(SESSION_FILE_PATH, encryptedData);
     logger.info('Session saved to', SESSION_FILE_PATH);
@@ -33,7 +33,8 @@ export async function saveSession(cookies: { name: string, value: string, domain
 export async function restoreSession(context: BrowserContext): Promise<void> {
     if (fs.existsSync(SESSION_FILE_PATH)) {
         const encryptedData = fs.readFileSync(SESSION_FILE_PATH, 'utf-8');
-        const cookies = JSON.parse(decrypt(encryptedData, ENCRYPTION_KEY));
+        const decryptedData: string = decrypt(encryptedData, ENCRYPTION_KEY);
+        const cookies = JSON.parse(decryptedData) as Parameters<BrowserContext['addCookies']>[0];
         await context.addCookies(cookies);
         logger.info('Session restored from', SESSION_FILE_PATH);
     }
