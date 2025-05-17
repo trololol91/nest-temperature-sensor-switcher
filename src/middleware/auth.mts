@@ -13,7 +13,7 @@ export interface JwtPayload {
 }
 
 // Extend the Request interface to include a 'user' property
-interface AuthenticatedRequest extends Request {
+export interface AuthenticatedRequest extends Request {
   user?: JwtPayload;
 }
 

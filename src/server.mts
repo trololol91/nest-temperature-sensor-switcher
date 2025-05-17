@@ -36,5 +36,5 @@ logger.info('Starting the Nest Temperature Sensor Switcher API server...');
 
 // Start the server
 app.listen(PORT, () => {
-    logger.info(`Server is running on http://localhost:${PORT}`);
+    logger.info(`Server is running on http://localhost:${PORT.toString()}`);
 });

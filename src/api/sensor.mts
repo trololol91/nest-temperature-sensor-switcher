@@ -123,16 +123,15 @@ router.get('/sensor-names', (_req, res) => {
  */
 router.get('/', (_req, res) => {
     try {
-    interface Sensor {
-      id: number;
-      name: string;
-      deviceID: string;
-      thermostat_id: number | null;
-    }
-    const rows = db.prepare<unknown[], Sensor>('SELECT * FROM sensors').all();
-    res.status(200).json({ sensors: rows });
-    }
-    catch (err) {
+        interface Sensor {
+        id: number;
+        name: string;
+        deviceID: string;
+        thermostat_id: number | null;
+        }
+        const rows = db.prepare<unknown[], Sensor>('SELECT * FROM sensors').all();
+        res.status(200).json({ sensors: rows });
+    } catch (err) {
         logger.error('Error fetching sensors:', (err instanceof Error ? err.message : err));
         res.status(500).json({ error: 'Failed to fetch sensors' });
     }

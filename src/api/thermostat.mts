@@ -1,9 +1,7 @@
 import express from 'express';
-import { authenticate } from 'middleware/auth.mts';
+import { authenticate, AuthenticatedRequest } from 'middleware/auth.mts';
 import db from 'middleware/database.mts';
 import { createNamedLogger } from 'utils/logger.mts';
-import { JwtPayload } from 'middleware/auth.mts';
-import { Request } from 'express';
 
 const router = express.Router();
 const logger = createNamedLogger('ThermostatRoutes');
@@ -11,14 +9,20 @@ const logger = createNamedLogger('ThermostatRoutes');
 // Apply authentication middleware to all routes
 router.use(authenticate);
 
-// Define a type for requests with user property
-interface AuthenticatedRequest extends Request {
-  user?: JwtPayload;
-}
-
 /**
  * @swagger
  * /api/thermostat:
+ *   get:
+ *     summary: Get all thermostats for the current logged-in user.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: A list of thermostats associated with the user.
+ *       401:
+ *         description: Unauthorized - User not authenticated.
+ *       500:
+ *         description: Failed to retrieve thermostats.
  *   post:
  *     summary: Add a thermostat to the current logged-in user.
  *     security:
@@ -44,6 +48,31 @@ interface AuthenticatedRequest extends Request {
  *       500:
  *         description: Failed to add thermostat.
  */
+
+// GET endpoint to retrieve all thermostats for a user
+router.get('/', (req: AuthenticatedRequest, res) => {
+    const userId = req.user?.id;
+    
+    if (!userId) {
+        res.status(401).json({ error: 'Missing user context' });
+        return;
+    }
+
+    try {
+        const query = `
+            SELECT t.id, t.name as thermostatName, t.location
+            FROM thermostat t
+            JOIN user_thermostats ut ON t.id = ut.thermostat_id
+            WHERE ut.user_id = ?
+        `;
+        
+        const thermostats = db.prepare(query).all(userId);
+        res.status(200).json(thermostats);
+    } catch (err) {
+        logger.error('Error retrieving thermostats for user:', err instanceof Error ? err.message : err);
+        res.status(500).json({ error: 'Failed to retrieve thermostats' });
+    }
+});
 
 interface AddThermostatBody {
   thermostatName?: string;
