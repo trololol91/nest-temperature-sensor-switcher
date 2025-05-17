@@ -9,10 +9,11 @@ const logger = createNamedLogger('ChangeNestThermostatScript');
 /**
  * Changes the selected Nest thermostat to the specified device ID.
  * @param {string} deviceID - The device ID of the thermostat to select.
+ * @param {string} thermostatId - The Nest thermostat ID to use for navigation.
  * @param {boolean} headless - Whether to run the browser in headless mode.
  * @returns {Promise<void>} - A promise that resolves when the operation is complete.
  */
-export async function changeNestThermostat(deviceID: string, headless: boolean): Promise<void> {
+export async function changeNestThermostat(deviceID: string, thermostatId: string, headless: boolean): Promise<void> {
     logger.info('Starting Playwright...');
     const browser = await chromium.launch({
         headless: headless, // Use the headless argument from yargs
@@ -49,15 +50,9 @@ export async function changeNestThermostat(deviceID: string, headless: boolean):
         // Wait for the home icon label to be visible
         await homePage.waitForHomeIconLabelVisible({ timeout: 10000 });
 
-        // Replace DeviceConstants.LivingRoomThermostat with THERMOSTAT_ID from environment variables
-        const thermostatId = process.env.THERMOSTAT_ID;
-        if (!thermostatId) {
-            throw new Error('THERMOSTAT_ID environment variable is not set.');
-        }
-
         // Click on thermostat puck item
         const thermostatItem = await homePage.selectPuckItemByHref(thermostatId);
-        await thermostatItem.click();
+        await thermostatItem?.click();
 
         // Wait for the thermostat setting button to be visible
         await homePage.waitForSettingsButtonVisible({ timeout: 10000 });
@@ -71,8 +66,8 @@ export async function changeNestThermostat(deviceID: string, headless: boolean):
 
         // Click on the specified thermostat
         const thermostat = await homePage.selectTemperatureSensorByDeviceID(deviceID);
-        await thermostat.scrollIntoViewIfNeeded();
-        await thermostat.evaluate((el) => el.click());
+        await thermostat?.scrollIntoViewIfNeeded();
+        await thermostat?.evaluate<void, HTMLButtonElement>((el) => el.click());
         logger.info(`Clicked on thermostat with deviceID: ${deviceID}`);
 
         // Wait for thermostat to be selected

@@ -4,6 +4,7 @@ import db from 'middleware/database.mts';
 import bcrypt from 'bcrypt';
 import { storeToken } from 'helper/authHelper.mts';
 import { SECRET_KEY } from 'constants.mts';
+import { JwtPayload } from 'middleware/auth.mts';
 
 const router = express.Router();
 
@@ -36,8 +37,14 @@ const router = express.Router();
  *         description: Internal server error.
  */
 
+// Define user interface
+interface User {
+  id: number;
+  password: string;
+}
+
 // POST route for user login
-router.post('/login', (req, res) => {
+router.post('/login', (req: express.Request<object, object, { username?: string, password?: string }>, res) => {
     const { username, password } = req.body;
 
     if (!username || !password) {
@@ -45,42 +52,45 @@ router.post('/login', (req, res) => {
         return;
     }
 
-    const query = `SELECT id, password FROM users WHERE username = ?`;
-
-    db.get(query, [username], async (err, row: { id: number; password: string } | undefined) => {
-        if (err) {
-            console.error('Database error:', err);
-            res.status(500).json({ error: 'Internal server error' });
-            return;
-        }
+    try {
+        const query = `SELECT id, password FROM users WHERE username = ?`;
+        const row = db.prepare<string, User>(query).get(username);
 
         if (!row) {
             res.status(401).json({ error: 'Invalid credentials' });
             return;
         }
 
-        try {
-            const isPasswordValid = await bcrypt.compare(password, row.password);
+        bcrypt.compare(password, row.password, (compareErr, isPasswordValid) => {
+            if (compareErr) {
+                console.error('Error comparing password:', compareErr);
+                res.status(500).json({ error: 'Internal server error' });
+                return;
+            }
 
             if (isPasswordValid) {
-                const token = jwt.sign({ username }, SECRET_KEY, { expiresIn: '1h' });
+                const payload: JwtPayload = { id: row.id, username };
+                const token = jwt.sign(payload, SECRET_KEY, { expiresIn: '1h' });
                 const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString(); // 1 hour from now
 
                 try {
-                    await storeToken(db, row.id, token, expiresAt);
+                    storeToken(db, row.id, token, expiresAt);
                     res.status(200).json({ token });
-                } catch (storeError) {
+                }
+                catch (storeError) {
                     console.error('Error storing token:', storeError);
                     res.status(500).json({ error: 'Internal server error' });
                 }
-            } else {
+            }
+            else {
                 res.status(401).json({ error: 'Invalid credentials' });
             }
-        } catch (error) {
-            console.error('Error comparing password:', error);
-            res.status(500).json({ error: 'Internal server error' });
-        }
-    });
+        });
+    }
+    catch (err) {
+        console.error('Database error:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
 /**
@@ -116,7 +126,13 @@ router.post('/login', (req, res) => {
  */
 
 // POST route for user account creation
-router.post('/create-account', async (req, res) => {
+interface CreateAccountBody {
+  username?: string;
+  password?: string;
+  email?: string;
+}
+
+router.post('/create-account', async (req: express.Request<object, object, CreateAccountBody>, res): Promise<void> => {
     const { username, password, email } = req.body;
 
     if (!username || !password || !email) {
@@ -125,24 +141,29 @@ router.post('/create-account', async (req, res) => {
     }
 
     try {
-        // Hash the password with bcrypt
+    // Hash the password with bcrypt
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        const query = `INSERT INTO users (username, password, email) VALUES (?, ?, ?)`;
+        try {
+            const query = `INSERT INTO users (username, password, email) VALUES (?, ?, ?)`;
+            const result = db.prepare(query).run(username, hashedPassword, email);
 
-        db.run(query, [username, hashedPassword, email], function (err) {
-            if (err) {
-                if (err.message.includes('UNIQUE constraint failed')) {
-                    res.status(409).json({ error: 'Username or email already exists' });
-                } else {
-                    res.status(500).json({ error: 'Failed to create account' });
-                }
-                return;
+            res.status(201).json({
+                message: 'Account created successfully',
+                userId: result.lastInsertRowid,
+            });
+        }
+        catch (err) {
+            if (err instanceof Error && err.message.includes('UNIQUE constraint failed')) {
+                res.status(409).json({ error: 'Username or email already exists' });
             }
-
-            res.status(201).json({ message: 'Account created successfully', userId: this.lastID });
-        });
-    } catch (error) {
+            else {
+                console.error('Error creating account:', err);
+                res.status(500).json({ error: 'Failed to create account' });
+            }
+        }
+    }
+    catch (error) {
         console.error('Error hashing password:', error);
         res.status(500).json({ error: 'Failed to hash password' });
     }

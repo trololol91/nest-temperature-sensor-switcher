@@ -53,7 +53,7 @@ export const logger = createLogger({
  * @param {string} [fileName='application'] - The filename for the log file (default: 'application').
  * @returns {Logger} - The configured Winston logger instance.
  */
-export const createNamedLogger = (name: string, fileName: string = 'application'): ReturnType<typeof createLogger> => createLogger({
+export const createNamedLogger = (name: string, fileName = 'application'): ReturnType<typeof createLogger> => createLogger({
     level: logLevel,
     format: format.combine(
         format.label({ label: name }),

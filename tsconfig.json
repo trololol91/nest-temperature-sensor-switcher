@@ -1,33 +1,29 @@
 {
-  "compilerOptions": {
-    "target": "es2022",
-    "module": "node16",
-    "lib": ["ES2022"],
-    "moduleResolution": "node16",
-    "rootDir": ".",
-    "outDir": "dist",
-    "allowSyntheticDefaultImports": true,
-    "importHelpers": true,
-    "alwaysStrict": true,
-    "sourceMap": true,
-    "forceConsistentCasingInFileNames": true,
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitReturns": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noImplicitThis": false,
-    "strictNullChecks": false,
-    "allowImportingTsExtensions": true,
-    "noEmit": true,
-    "baseUrl": "src",
-    "paths": {
-      "helper/*": [
-        "helper/*"
-      ],
-    }
-  },
-  "include": [
-    "src/**/*",
-    "vite.config.ts"
-  ]
+    "compilerOptions": {
+        "target": "ES2022",
+        "module": "ESNext",
+        "moduleResolution": "Node",
+        "rootDir": ".",
+        "outDir": "dist",
+        "allowSyntheticDefaultImports": true,
+        "importHelpers": true,
+        "alwaysStrict": true,
+        "esModuleInterop": true,
+        "noFallthroughCasesInSwitch": true,
+        "forceConsistentCasingInFileNames": true,
+        "noImplicitReturns": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noImplicitThis": false,
+        "strictNullChecks": true,
+        "allowImportingTsExtensions": true,
+        "strict": true,
+        "skipLibCheck": true,
+        "resolveJsonModule": true,
+        "noEmit": true,
+        "types": ["node", "jest"],
+        "baseUrl": "src",
+    },
+    "include": ["src", "src/**/*.mts", "src/**/*.ts", "src/**/*.js", "tests", "*.mts", "*.ts"],
+    "exclude": ["node_modules", "dist", "coverage", "logs"]
 }

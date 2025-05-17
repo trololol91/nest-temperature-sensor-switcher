@@ -17,7 +17,7 @@ const logger = createNamedLogger('SessionUtils');
  * @param {Array} cookies - The cookies to save.
  * @returns {Promise<void>} - A promise that resolves when the session is saved.
  */
-export async function saveSession(cookies: Array<{ name: string; value: string; domain: string; path: string; expires: number; httpOnly: boolean; secure: boolean; sameSite: string; }>): Promise<void> {
+export async function saveSession(cookies: { name: string, value: string, domain: string, path: string, expires: number, httpOnly: boolean, secure: boolean, sameSite: string }[]): Promise<void> {
     const encryptedData = encrypt(JSON.stringify(cookies), ENCRYPTION_KEY);
     fs.writeFileSync(SESSION_FILE_PATH, encryptedData);
     logger.info('Session saved to', SESSION_FILE_PATH);
