@@ -67,7 +67,7 @@ export async function changeNestThermostat(deviceID: string, thermostatId: strin
         // Click on the specified thermostat
         const thermostat = await homePage.selectTemperatureSensorByDeviceID(deviceID);
         await thermostat?.scrollIntoViewIfNeeded();
-        await thermostat?.evaluate<void, HTMLButtonElement>((el) => el.click());
+        await thermostat?.evaluate<unknown, HTMLButtonElement>((el) => { el.click(); });
         logger.info(`Clicked on thermostat with deviceID: ${deviceID}`);
 
         // Wait for thermostat to be selected
@@ -79,12 +79,12 @@ export async function changeNestThermostat(deviceID: string, thermostatId: strin
         } else {
             logger.error('Page object is not available for taking a screenshot.');
         }
-        logger.error(`Error interacting with Nest thermostat. Details: ${error}`);
+        logger.error(`Error interacting with Nest thermostat. Details: ${error instanceof Error ? error.message : String(error)}`);
         throw error; // Re-throw the error after logging and taking a screenshot
     } finally {
         // Save session cookies using the browser's context
         const cookies = await context.cookies();
-        await saveSession(cookies);
+        saveSession(cookies);
         logger.info('Session cookies saved.');
 
         // Close the browser

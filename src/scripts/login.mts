@@ -74,7 +74,7 @@ async function login(headless: boolean): Promise<void> {
 
     // Save session after login
     const cookies = await context.cookies();
-    await saveSession(cookies);
+    saveSession(cookies);
 
     // Close the browser
     await browser.close();

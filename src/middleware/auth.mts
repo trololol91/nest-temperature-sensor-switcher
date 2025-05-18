@@ -1,4 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
+import { ParamsDictionary } from 'express-serve-static-core';
+import { ParsedQs } from 'qs';
 import jwt from 'jsonwebtoken';
 import Database from 'better-sqlite3';
 import { SECRET_KEY } from 'constants.mts';
@@ -6,15 +8,15 @@ import path from 'path';
 import { getProjectRoot } from 'constants.mts';
 
 // Interface for the data signed in the JWT token
-export interface JwtPayload {
+export interface AuthJwtPayload extends jwt.JwtPayload {
   id: number; // user id
   username: string;
   // add other fields as needed
 }
 
 // Extend the Request interface to include a 'user' property
-export interface AuthenticatedRequest extends Request {
-  user?: JwtPayload;
+export interface AuthenticatedRequest<P = ParamsDictionary, ResBody = unknown, ReqBody = unknown, ReqQuery = ParsedQs> extends Request<P, ResBody, ReqBody, ReqQuery> {
+    user?: AuthJwtPayload;
 }
 
 // Middleware to check authentication
@@ -46,7 +48,8 @@ export const authenticate = (req: AuthenticatedRequest, res: Response, next: Nex
             }
 
             // Attach user information to the request object
-            req.user = decoded as JwtPayload;
+            req.user = decoded as AuthJwtPayload;
+            // Optionally, you can also attach the token information to the request
             next();
         }
         catch (dbErr) {

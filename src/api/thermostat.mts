@@ -79,11 +79,9 @@ interface AddThermostatBody {
   location?: string;
 }
 
-type TotalThermoStatRequest = AddThermostatBody & AuthenticatedRequest;
-
-router.post('/', (req: express.Request<object, object, TotalThermoStatRequest>, res) => {
+router.post('/', (req: AuthenticatedRequest<object, object, AddThermostatBody>, res) => {
     const { thermostatName, location } = req.body;
-    const userId = req.body.user?.id;
+    const userId = req.user?.id;
     if (!thermostatName) {
         res.status(400).json({ error: 'Missing thermostatName' });
         return;
@@ -93,13 +91,19 @@ router.post('/', (req: express.Request<object, object, TotalThermoStatRequest>, 
         return;
     }
     try {
-    // Start transaction
+        // Start transaction
         db.prepare('BEGIN TRANSACTION').run();
+
+        // Insert the new thermostat
         const insertThermostat = db.prepare('INSERT INTO thermostat (name, location) VALUES (?, ?)');
         const result = insertThermostat.run(thermostatName, location ?? null);
         const thermostatId = Number(result.lastInsertRowid);
+
+        // Link the thermostat to the user
         const insertUserThermostat = db.prepare('INSERT INTO user_thermostats (user_id, thermostat_id) VALUES (?, ?)');
         insertUserThermostat.run(userId, thermostatId);
+
+        // Commit transaction
         db.prepare('COMMIT').run();
         res.status(201).json({ id: thermostatId, thermostatName, location });
     }

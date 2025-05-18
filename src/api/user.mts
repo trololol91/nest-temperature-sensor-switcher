@@ -4,7 +4,7 @@ import db from 'middleware/database.mts';
 import bcrypt from 'bcrypt';
 import { storeToken } from 'helper/authHelper.mts';
 import { SECRET_KEY } from 'constants.mts';
-import { JwtPayload } from 'middleware/auth.mts';
+import { AuthJwtPayload } from 'middleware/auth.mts';
 
 const router = express.Router();
 
@@ -69,7 +69,7 @@ router.post('/login', (req: express.Request<object, object, { username?: string,
             }
 
             if (isPasswordValid) {
-                const payload: JwtPayload = { id: row.id, username };
+                const payload: AuthJwtPayload = { id: row.id, username };
                 const token = jwt.sign(payload, SECRET_KEY, { expiresIn: '1h' });
                 const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString(); // 1 hour from now
 
@@ -141,7 +141,7 @@ router.post('/create-account', async (req: express.Request<object, object, Creat
     }
 
     try {
-    // Hash the password with bcrypt
+        // Hash the password with bcrypt
         const hashedPassword = await bcrypt.hash(password, 10);
 
         try {
