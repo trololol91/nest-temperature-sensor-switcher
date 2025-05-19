@@ -9,11 +9,11 @@ const logger = createNamedLogger('ChangeNestThermostatScript');
 /**
  * Changes the selected Nest thermostat to the specified device ID.
  * @param {string} deviceID - The device ID of the thermostat to select.
- * @param {string} thermostatId - The Nest thermostat ID to use for navigation.
+ * @param {string} thermostatName - The Nest thermostat ID to use for navigation.
  * @param {boolean} headless - Whether to run the browser in headless mode.
  * @returns {Promise<void>} - A promise that resolves when the operation is complete.
  */
-export async function changeNestThermostat(deviceID: string, thermostatId: string, headless: boolean): Promise<void> {
+export async function changeNestThermostat(deviceID: string, thermostatName: string, headless: boolean): Promise<void> {
     logger.info('Starting Playwright...');
     const browser = await chromium.launch({
         headless: headless, // Use the headless argument from yargs
@@ -51,7 +51,7 @@ export async function changeNestThermostat(deviceID: string, thermostatId: strin
         await homePage.waitForHomeIconLabelVisible({ timeout: 10000 });
 
         // Click on thermostat puck item
-        const thermostatItem = await homePage.selectPuckItemByHref(thermostatId);
+        const thermostatItem = await homePage.selectPuckItemByHref(thermostatName);
         await thermostatItem?.click();
 
         // Wait for the thermostat setting button to be visible
