@@ -10,31 +10,130 @@ const router = express.Router();
 
 /**
  * @swagger
+ * components:
+ *   schemas:
+ *     User:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *           description: Unique identifier for the user
+ *         username:
+ *           type: string
+ *           description: Username for login
+ *         email:
+ *           type: string
+ *           description: User's email address
+ *     LoginRequest:
+ *       type: object
+ *       required:
+ *         - username
+ *         - password
+ *       properties:
+ *         username:
+ *           type: string
+ *           description: Username for login
+ *         password:
+ *           type: string
+ *           description: User's password
+ *     LoginResponse:
+ *       type: object
+ *       properties:
+ *         token:
+ *           type: string
+ *           description: JWT authentication token
+ *     CreateAccountRequest:
+ *       type: object
+ *       required:
+ *         - username
+ *         - password
+ *         - email
+ *       properties:
+ *         username:
+ *           type: string
+ *           description: Username for the new account
+ *         password:
+ *           type: string
+ *           description: Password for the new account
+ *         email:
+ *           type: string
+ *           description: Email address for the new account
+ *     CreateAccountResponse:
+ *       type: object
+ *       properties:
+ *         message:
+ *           type: string
+ *           description: Success message
+ *         userId:
+ *           type: integer
+ *           description: ID of the newly created user
+ *     ErrorResponse:
+ *       type: object
+ *       properties:
+ *         error:
+ *           type: string
+ *           description: Error message
+ *   securitySchemes:
+ *     bearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
+ *       description: JWT token authentication
+ * 
+ * tags:
+ *   - name: Users
+ *     description: User account management operations
+ */
+
+/**
+ * @swagger
  * /api/user/login:
  *   post:
- *     summary: Log in a user and return a JWT token.
+ *     tags: [Users]
+ *     summary: Log in a user and return a JWT token
+ *     description: Authenticates a user with username and password, returns a JWT token valid for 1 hour
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               username:
- *                 type: string
- *                 description: The username of the user.
- *               password:
- *                 type: string
- *                 description: The password of the user.
+ *             $ref: '#/components/schemas/LoginRequest'
+ *           example:
+ *             username: "johndoe"
+ *             password: "securePassword123"
  *     responses:
  *       200:
- *         description: Login successful, returns a JWT token.
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/LoginResponse'
+ *             example:
+ *               token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
  *       400:
- *         description: Missing username or password.
+ *         description: Missing username or password
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example:
+ *               error: "Missing username or password"
  *       401:
- *         description: Invalid credentials.
+ *         description: Invalid credentials
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example:
+ *               error: "Invalid credentials"
  *       500:
- *         description: Internal server error.
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example:
+ *               error: "Internal server error"
  */
 
 // Define user interface
@@ -97,32 +196,58 @@ router.post('/login', (req: express.Request<object, object, { username?: string,
  * @swagger
  * /api/user/create-account:
  *   post:
- *     summary: Create a new user account.
+ *     tags: [Users]
+ *     summary: Create a new user account
+ *     description: Registers a new user in the system with username, password and email
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               username:
- *                 type: string
- *                 description: The username for the new account.
- *               password:
- *                 type: string
- *                 description: The password for the new account.
- *               email:
- *                 type: string
- *                 description: The email address for the new account.
+ *             $ref: '#/components/schemas/CreateAccountRequest'
+ *           example:
+ *             username: "newuser"
+ *             password: "securePassword123"
+ *             email: "user@example.com"
  *     responses:
  *       201:
- *         description: Account created successfully.
+ *         description: Account created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/CreateAccountResponse'
+ *             example:
+ *               message: "Account created successfully"
+ *               userId: 123
  *       400:
- *         description: Missing username, password, or email.
+ *         description: Missing required fields
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example:
+ *               error: "Missing username, password, or email"
  *       409:
- *         description: Username or email already exists.
+ *         description: Username or email already exists
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             example:
+ *               error: "Username or email already exists"
  *       500:
- *         description: Failed to create account or hash password.
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *             examples:
+ *               createAccount:
+ *                 value:
+ *                   error: "Failed to create account"
+ *               hashPassword:
+ *                 value:
+ *                   error: "Failed to hash password"
  */
 
 // POST route for user account creation

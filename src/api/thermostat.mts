@@ -11,10 +11,6 @@ router.use(authenticate);
 
 /**
  * @swagger
- * tags:
- *   - name: Thermostats
- *     description: API endpoints for managing thermostats
- * 
  * components:
  *   schemas:
  *     Thermostat:
@@ -22,152 +18,79 @@ router.use(authenticate);
  *       properties:
  *         id:
  *           type: integer
- *           description: The thermostat ID *         thermostatName:
+ *           description: Unique identifier for the thermostat
+ *         thermostatName:
  *           type: string
  *           description: The name of the thermostat
  *         location:
  *           type: string
- *           nullable: true
- *           description: The physical location of the thermostat
+ *           description: Physical location of the thermostat
  *         deviceId:
  *           type: string
- *           nullable: true
- *           description: The device ID of the thermostat
- *       required:
- *         - id
- *         - thermostatName
+ *           description: Unique device identifier in the Nest system
+ *   securitySchemes:
+ *     bearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
+ *       description: JWT token authentication required for all thermostat operations
  * 
+ * tags:
+ *   - name: Thermostats
+ *     description: Operations related to Nest thermostats management
+ * 
+ * security:
+ *   - bearerAuth: []
+ */
+
+/**
+ * @swagger
  * /api/thermostat:
  *   get:
- *     tags:
- *       - Thermostats
- *     summary: Get all thermostats for the current logged-in user
- *     description: Returns a list of all thermostats owned by or shared with the authenticated user
+ *     tags: [Thermostats]
+ *     summary: Retrieve all thermostats for the authenticated user
+ *     description: Returns a list of all thermostats associated with the authenticated user's account
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: A list of thermostats associated with the user
+ *         description: List of thermostats retrieved successfully
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/Thermostat'
+ *             example:
+ *               - id: 1
+ *                 thermostatName: "Living Room"
+ *                 location: "First Floor"
+ *                 deviceId: "T3.C25pRGVcdHJzdGO4OTE4"
+ *               - id: 2
+ *                 thermostatName: "Bedroom"
+ *                 location: "Second Floor"
+ *                 deviceId: "T3.X82sRVFjdTZnOGO5YTE2"
  *       401:
- *         description: Unauthorized - User not authenticated
- *       500:
- *         description: Failed to retrieve thermostats
- *   post:
- *     tags:
- *       - Thermostats
- *     summary: Add a thermostat to the current logged-in user
- *     description: Creates a new thermostat and associates it with the authenticated user
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties: *               thermostatName:
- *                 type: string
- *                 description: The name of the thermostat to add
- *               location:
- *                 type: string
- *                 description: The location of the thermostat
- *               deviceId:
- *                 type: string
- *                 description: The device ID of the thermostat
- *             required:
- *               - thermostatName
- *               - location
- *               - deviceId
- *     responses:
- *       201:
- *         description: Thermostat added successfully
+ *         description: User not authenticated
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 id:
- *                   type: integer
- *                   description: The ID of the created thermostat
- *                 thermostatName:
+ *                 error:
  *                   type: string
- *                   description: The name of the created thermostat *                 location:
- *                   type: string
- *                   description: The location of the created thermostat
- *                 deviceId:
- *                   type: string
- *                   description: The device ID of the created thermostat *       400:
- *         description: Bad request - Missing required fields (thermostatName, location, deviceId)
- *       401:
- *         description: Unauthorized - User not authenticated
+ *                   example: "Missing user context"
  *       500:
- *         description: Failed to add thermostat
- * 
- * /api/thermostat/{id}/assign:
- *   post:
- *     tags:
- *       - Thermostats
- *     summary: Assign a thermostat to another user
- *     description: Shares a thermostat with another user, allowing them to access and control it
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: The ID of the thermostat to assign
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               userId:
- *                 type: integer
- *                 description: The ID of the user to assign the thermostat to
- *             required:
- *               - userId
- *     responses:
- *       200:
- *         description: Thermostat assigned successfully
+ *         description: Server error
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 message:
+ *                 error:
  *                   type: string
- *                   description: Success message
- *                 thermostatId:
- *                   type: integer
- *                   description: The ID of the assigned thermostat
- *                 assignedToUserId:
- *                   type: integer
- *                   description: The ID of the user the thermostat was assigned to
- *       400:
- *         description: Bad request - Invalid thermostat ID or missing user ID
- *       401:
- *         description: Unauthorized - User not authenticated
- *       403:
- *         description: Forbidden - User does not own the thermostat
- *       404:
- *         description: Not found - Thermostat or target user not found
- *       409:
- *         description: Conflict - Thermostat is already assigned to the target user
- *       500:
- *         description: Failed to assign thermostat
+ *                   example: "Failed to retrieve thermostats"
  */
-
-// GET endpoint to retrieve all thermostats for a user
 router.get('/', (req: AuthenticatedRequest, res) => {
     const userId = req.user?.id;
     
@@ -190,6 +113,90 @@ router.get('/', (req: AuthenticatedRequest, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/thermostat:
+ *   post:
+ *     tags: [Thermostats]
+ *     summary: Create a new thermostat
+ *     description: Adds a new thermostat to the system and associates it with the authenticated user's account
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               thermostatName:
+ *                 type: string
+ *                 description: The name of the thermostat
+ *                 example: "Main Floor"
+ *               location:
+ *                 type: string
+ *                 description: Physical location of the thermostat
+ *                 example: "Living Room"
+ *               deviceId:
+ *                 type: string
+ *                 description: Unique device identifier in the Nest system
+ *                 example: "T3.D58pYGftdUVndB4MWE5"
+ *             required:
+ *               - thermostatName
+ *               - location
+ *               - deviceId
+ *     responses:
+ *       201:
+ *         description: Thermostat created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Thermostat'
+ *             example:
+ *               id: 3
+ *               thermostatName: "Main Floor"
+ *               location: "Living Room"
+ *               deviceId: "T3.D58pYGftdUVndB4MWE5"
+ *       400:
+ *         description: Missing required fields
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *             examples:
+ *               missingName:
+ *                 value:
+ *                   error: "Missing thermostatName"
+ *               missingLocation:
+ *                 value:
+ *                   error: "Missing location"
+ *               missingDeviceId:
+ *                 value:
+ *                   error: "Missing deviceId"
+ *       401:
+ *         description: User not authenticated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Missing user context"
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to add thermostat or link to user"
+ */
 interface AddThermostatBody {
   thermostatName: string;
   location: string;
@@ -242,7 +249,112 @@ router.post('/', (req: AuthenticatedRequest<object, object, AddThermostatBody>, 
 });
 
 /**
- * Interface for the request body when assigning a thermostat to another user
+ * @swagger
+ * /api/thermostat/{id}/assign:
+ *   post:
+ *     tags: [Thermostats]
+ *     summary: Assign a thermostat to another user
+ *     description: Allows a user to share or transfer ownership of a thermostat to another user
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The unique ID of the thermostat to assign
+ *         example: 1
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userId:
+ *                 type: integer
+ *                 description: The ID of the user to assign the thermostat to
+ *                 example: 42
+ *             required:
+ *               - userId
+ *     responses:
+ *       200:
+ *         description: Thermostat assigned successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Thermostat assigned successfully"
+ *                 thermostatId:
+ *                   type: integer
+ *                   example: 1
+ *                 assignedToUserId:
+ *                   type: integer
+ *                   example: 42
+ *       400:
+ *         description: Missing target user ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Missing target user ID"
+ *       401:
+ *         description: User not authenticated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Missing user context"
+ *       403:
+ *         description: Not authorized to assign this thermostat
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "You do not own this thermostat"
+ *       404:
+ *         description: Thermostat not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Thermostat not found"
+ *       409:
+ *         description: Thermostat already assigned to this user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Thermostat is already assigned to the target user"
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to assign thermostat"
  */
 interface AssignThermostatBody {
   userId: number;
