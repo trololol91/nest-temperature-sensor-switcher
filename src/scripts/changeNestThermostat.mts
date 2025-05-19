@@ -8,11 +8,12 @@ const logger = createNamedLogger('ChangeNestThermostatScript');
 
 /**
  * Changes the selected Nest thermostat to the specified device ID.
- * @param {string} deviceID - The device ID of the thermostat to select.
+ * @param {string} deviceID - The sensor device ID to select.
+ * @param {string} thermostatDeviceId - The Nest thermostat ID to use for navigation.
  * @param {boolean} headless - Whether to run the browser in headless mode.
  * @returns {Promise<void>} - A promise that resolves when the operation is complete.
  */
-export async function changeNestThermostat(deviceID: string, headless: boolean): Promise<void> {
+export async function changeNestThermostat(deviceID: string, thermostatDeviceId: string, headless: boolean): Promise<void> {
     logger.info('Starting Playwright...');
     const browser = await chromium.launch({
         headless: headless, // Use the headless argument from yargs
@@ -49,15 +50,9 @@ export async function changeNestThermostat(deviceID: string, headless: boolean):
         // Wait for the home icon label to be visible
         await homePage.waitForHomeIconLabelVisible({ timeout: 10000 });
 
-        // Replace DeviceConstants.LivingRoomThermostat with THERMOSTAT_ID from environment variables
-        const thermostatId = process.env.THERMOSTAT_ID;
-        if (!thermostatId) {
-            throw new Error('THERMOSTAT_ID environment variable is not set.');
-        }
-
         // Click on thermostat puck item
-        const thermostatItem = await homePage.selectPuckItemByHref(thermostatId);
-        await thermostatItem.click();
+        const thermostatItem = await homePage.selectPuckItemByHref(thermostatDeviceId);
+        await thermostatItem?.click();
 
         // Wait for the thermostat setting button to be visible
         await homePage.waitForSettingsButtonVisible({ timeout: 10000 });
@@ -71,8 +66,8 @@ export async function changeNestThermostat(deviceID: string, headless: boolean):
 
         // Click on the specified thermostat
         const thermostat = await homePage.selectTemperatureSensorByDeviceID(deviceID);
-        await thermostat.scrollIntoViewIfNeeded();
-        await thermostat.evaluate((el) => el.click());
+        await thermostat?.scrollIntoViewIfNeeded();
+        await thermostat?.evaluate<unknown, HTMLButtonElement>((el) => { el.click(); });
         logger.info(`Clicked on thermostat with deviceID: ${deviceID}`);
 
         // Wait for thermostat to be selected
@@ -84,12 +79,12 @@ export async function changeNestThermostat(deviceID: string, headless: boolean):
         } else {
             logger.error('Page object is not available for taking a screenshot.');
         }
-        logger.error(`Error interacting with Nest thermostat. Details: ${error}`);
+        logger.error(`Error interacting with Nest thermostat. Details: ${error instanceof Error ? error.message : String(error)}`);
         throw error; // Re-throw the error after logging and taking a screenshot
     } finally {
         // Save session cookies using the browser's context
         const cookies = await context.cookies();
-        await saveSession(cookies);
+        saveSession(cookies);
         logger.info('Session cookies saved.');
 
         // Close the browser

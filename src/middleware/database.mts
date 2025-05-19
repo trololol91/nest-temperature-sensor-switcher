@@ -1,4 +1,4 @@
-import sqlite3 from 'sqlite3';
+import Database from 'better-sqlite3';
 import { createNamedLogger } from 'utils/logger.mts';
 import fs from 'fs';
 import path from 'path';
@@ -14,12 +14,14 @@ if (!fs.existsSync(resourceDir)) {
 }
 
 const dbPath = path.resolve(getProjectRoot(), 'resource', 'encrypted-sensors.db');
-const db = new sqlite3.Database(dbPath, (err) => {
-    if (err) {
-        logger.error('Error opening database:', err.message);
-    } else {
-        logger.info('Connected to the SQLite database.');
-    }
-});
+let db: Database.Database;
+try {
+    db = new Database(dbPath);
+    logger.info('Connected to the SQLite database.');
+}
+catch (err) {
+    logger.error('Error opening database:', err instanceof Error ? err.message : err);
+    throw err;
+}
 
 export default db;

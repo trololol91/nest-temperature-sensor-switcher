@@ -6,7 +6,7 @@ dotenv.config();
 
 export const ENCRYPTION_KEY_FILE_NAME = 'encryption-key';
 export const DEFAULT_LOG_FILE_NAME = 'application.log';
-export const SECRET_KEY = process.env.JWT_SECRET || 'default_secret_key';
+export const SECRET_KEY = process.env.JWT_SECRET ?? 'default_secret_key';
 
 /**
  * Utility function to obtain the root path of the project.
@@ -19,6 +19,6 @@ export const getProjectRoot = (): string => {
 };
 
 // Define LOG_DIR constant
-export const LOG_DIR = path.isAbsolute(process.env.LOG_DIR || '')
-    ? process.env.LOG_DIR
-    : path.resolve(getProjectRoot(), process.env.LOG_DIR || 'logs');
+export const LOG_DIR: string = path.isAbsolute(process.env.LOG_DIR ?? '')
+    ? process.env.LOG_DIR ?? ''
+    : path.resolve(getProjectRoot(), process.env.LOG_DIR ?? 'logs');

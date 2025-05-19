@@ -12,7 +12,7 @@ const logger = createNamedLogger('Server');
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000; // Use PORT from .env or default to 3000
+const PORT = Number(process.env.PORT ?? 3000); // Use PORT from .env or default to 3000
 
 // Middleware to parse JSON
 app.use(express.json());
@@ -36,5 +36,5 @@ logger.info('Starting the Nest Temperature Sensor Switcher API server...');
 
 // Start the server
 app.listen(PORT, () => {
-    logger.info(`Server is running on http://localhost:${PORT}`);
+    logger.info(`Server is running on http://localhost:${PORT.toString()}`);
 });
