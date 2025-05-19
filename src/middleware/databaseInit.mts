@@ -25,10 +25,10 @@ export const initializeDatabase = (db: Database.Database): void => {
             token TEXT NOT NULL,
             expires_at TIMESTAMP,
             FOREIGN KEY (user_id) REFERENCES users (id)
-        )`,
+        )`,        
         `CREATE TABLE IF NOT EXISTS thermostat (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
+            name TEXT UNIQUE NOT NULL,
             location TEXT
         )`,
         `CREATE TABLE IF NOT EXISTS user_thermostats (
