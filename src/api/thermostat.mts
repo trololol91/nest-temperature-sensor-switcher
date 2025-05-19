@@ -25,7 +25,7 @@ router.use(authenticate);
  *         location:
  *           type: string
  *           description: Physical location of the thermostat
- *         deviceId:
+ *         deviceID:
  *           type: string
  *           description: Unique device identifier in the Nest system
  *   securitySchemes:
@@ -65,11 +65,11 @@ router.use(authenticate);
  *               - id: 1
  *                 thermostatName: "Living Room"
  *                 location: "First Floor"
- *                 deviceId: "T3.C25pRGVcdHJzdGO4OTE4"
+ *                 deviceID: "T3.C25pRGVcdHJzdGO4OTE4"
  *               - id: 2
  *                 thermostatName: "Bedroom"
  *                 location: "Second Floor"
- *                 deviceId: "T3.X82sRVFjdTZnOGO5YTE2"
+ *                 deviceID: "T3.X82sRVFjdTZnOGO5YTE2"
  *       401:
  *         description: User not authenticated
  *         content:
@@ -99,7 +99,7 @@ router.get('/', (req: AuthenticatedRequest, res) => {
         return;
     }    try {
         const query = `
-            SELECT t.id, t.name as thermostatName, t.location, t.deviceId
+            SELECT t.id, t.name as thermostatName, t.location, t.deviceID
             FROM thermostat t
             JOIN user_thermostats ut ON t.id = ut.thermostat_id
             WHERE ut.user_id = ?
@@ -137,14 +137,14 @@ router.get('/', (req: AuthenticatedRequest, res) => {
  *                 type: string
  *                 description: Physical location of the thermostat
  *                 example: "Living Room"
- *               deviceId:
+ *               deviceID:
  *                 type: string
  *                 description: Unique device identifier in the Nest system
  *                 example: "T3.D58pYGftdUVndB4MWE5"
  *             required:
  *               - thermostatName
  *               - location
- *               - deviceId
+ *               - deviceID
  *     responses:
  *       201:
  *         description: Thermostat created successfully
@@ -156,7 +156,7 @@ router.get('/', (req: AuthenticatedRequest, res) => {
  *               id: 3
  *               thermostatName: "Main Floor"
  *               location: "Living Room"
- *               deviceId: "T3.D58pYGftdUVndB4MWE5"
+ *               deviceID: "T3.D58pYGftdUVndB4MWE5"
  *       400:
  *         description: Missing required fields
  *         content:
@@ -173,9 +173,9 @@ router.get('/', (req: AuthenticatedRequest, res) => {
  *               missingLocation:
  *                 value:
  *                   error: "Missing location"
- *               missingDeviceId:
+ *               missingdeviceID:
  *                 value:
- *                   error: "Missing deviceId"
+ *                   error: "Missing deviceID"
  *       401:
  *         description: User not authenticated
  *         content:
@@ -200,11 +200,11 @@ router.get('/', (req: AuthenticatedRequest, res) => {
 interface AddThermostatBody {
   thermostatName: string;
   location: string;
-  deviceId: string;
+  deviceID: string;
 }
 
 router.post('/', (req: AuthenticatedRequest<object, object, AddThermostatBody>, res) => {
-    const { thermostatName, location, deviceId } = req.body;
+    const { thermostatName, location, deviceID } = req.body;
     const userId = req.user?.id;
     
     // Check all required fields
@@ -216,8 +216,8 @@ router.post('/', (req: AuthenticatedRequest<object, object, AddThermostatBody>, 
         res.status(400).json({ error: 'Missing location' });
         return;
     }
-    if (!deviceId) {
-        res.status(400).json({ error: 'Missing deviceId' });
+    if (!deviceID) {
+        res.status(400).json({ error: 'Missing deviceID' });
         return;
     }
     if (!userId) {
@@ -229,8 +229,8 @@ router.post('/', (req: AuthenticatedRequest<object, object, AddThermostatBody>, 
         db.prepare('BEGIN TRANSACTION').run();
 
         // Insert the new thermostat
-        const insertThermostat = db.prepare('INSERT INTO thermostat (name, location, deviceId) VALUES (?, ?, ?)');
-        const result = insertThermostat.run(thermostatName, location, deviceId);
+        const insertThermostat = db.prepare('INSERT INTO thermostat (name, location, deviceID) VALUES (?, ?, ?)');
+        const result = insertThermostat.run(thermostatName, location, deviceID);
         const thermostatId = Number(result.lastInsertRowid);
 
         // Link the thermostat to the user
@@ -239,7 +239,7 @@ router.post('/', (req: AuthenticatedRequest<object, object, AddThermostatBody>, 
 
         // Commit transaction
         db.prepare('COMMIT').run();
-        res.status(201).json({ id: thermostatId, thermostatName, location, deviceId });
+        res.status(201).json({ id: thermostatId, thermostatName, location, deviceID });
     }
     catch (err) {
         db.prepare('ROLLBACK').run();

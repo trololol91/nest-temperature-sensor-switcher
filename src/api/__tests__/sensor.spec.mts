@@ -99,7 +99,8 @@ describe('Sensor Router', () => {
             const response = await request.post('/api/sensor/change-sensor').send({
                 sensorName: 'Living Room Sensor',
                 thermostat_id: 1
-            });            expect(response.status).toBe(200);
+            });
+            expect(response.status).toBe(200);
             expect(response.body).toHaveProperty('message');
             // Type assertion for TypeScript safety
             expect((response.body as { message: string }).message).toContain('Living Room Sensor');

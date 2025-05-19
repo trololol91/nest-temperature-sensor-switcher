@@ -198,7 +198,7 @@ router.post('/change-sensor', async (req: AuthenticatedRequest<object, object, C
             res.status(403).json({ error: 'Sensor not found or not attached to the specified thermostat' });
             return;
         }
-        // Use the thermostat deviceID from the query result
+        // Use the thermostat deviceId from the query result
         await changeNestThermostat(sensor.deviceID, thermostat.deviceID, true); // Assuming headless mode
         res.status(200).json({ 
             message: `Temperature sensor changed to: ${sensorName} for thermostat: ${thermostat.name}` 

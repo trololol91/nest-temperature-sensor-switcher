@@ -8,8 +8,8 @@ const logger = createNamedLogger('ChangeNestThermostatScript');
 
 /**
  * Changes the selected Nest thermostat to the specified device ID.
- * @param {string} deviceID - The device ID of the thermostat to select.
- * @param {string} thermostatName - The Nest thermostat ID to use for navigation.
+ * @param {string} deviceID - The sensor device ID to select.
+ * @param {string} thermostatDeviceId - The Nest thermostat ID to use for navigation.
  * @param {boolean} headless - Whether to run the browser in headless mode.
  * @returns {Promise<void>} - A promise that resolves when the operation is complete.
  */

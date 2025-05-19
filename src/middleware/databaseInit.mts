@@ -30,7 +30,7 @@ export const initializeDatabase = (db: Database.Database): void => {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT UNIQUE NOT NULL,
             location TEXT,
-            deviceId TEXT
+            deviceID TEXT
         )`,
         `CREATE TABLE IF NOT EXISTS user_thermostats (
             user_id INTEGER NOT NULL,
