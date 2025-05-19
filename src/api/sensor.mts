@@ -88,7 +88,7 @@ router.post('/change-sensor', async (req: AuthenticatedRequest<object, object, C
     try {
         // First check if the thermostat exists and belongs to the user
         const thermostatQuery = `
-            SELECT t.id, t.name
+            SELECT t.id, t.name, t.deviceID
             FROM thermostat t
             JOIN user_thermostats ut ON t.id = ut.thermostat_id
             WHERE t.id = ? AND ut.user_id = ?
@@ -97,6 +97,7 @@ router.post('/change-sensor', async (req: AuthenticatedRequest<object, object, C
         interface ThermostatInfo {
             id: number;
             name: string;
+            deviceID: string;
         }
         
         const thermostat = db.prepare<[number, number], ThermostatInfo>(thermostatQuery).get(thermostat_id, userId);
@@ -123,9 +124,8 @@ router.post('/change-sensor', async (req: AuthenticatedRequest<object, object, C
             res.status(403).json({ error: 'Sensor not found or not attached to the specified thermostat' });
             return;
         }
-        
-        // Use the thermostat name from the query result
-        await changeNestThermostat(sensor.deviceID, thermostat.name, true); // Assuming headless mode
+        // Use the thermostat deviceID from the query result
+        await changeNestThermostat(sensor.deviceID, thermostat.deviceID, true); // Assuming headless mode
         res.status(200).json({ 
             message: `Temperature sensor changed to: ${sensorName} for thermostat: ${thermostat.name}` 
         });

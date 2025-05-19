@@ -74,11 +74,10 @@ describe('Thermostat Router', () => {
             // @ts-expect-error: Mocking a specific implementation
             vi.spyOn(db, 'prepare').mockImplementation((_source: string) => {
                 return {
-                    ...baseMockStatement,
-                    all: vi.fn(() => {
+                    ...baseMockStatement,                    all: vi.fn(() => {
                         return [
-                            { id: 1, thermostatName: 'Living Room', location: 'First Floor' },
-                            { id: 2, thermostatName: 'Bedroom', location: 'Second Floor' },
+                            { id: 1, thermostatName: 'Living Room', location: 'First Floor', deviceId: 'therm123' },
+                            { id: 2, thermostatName: 'Bedroom', location: 'Second Floor', deviceId: 'therm456' },
                         ];
                     }),
                 };
@@ -89,8 +88,8 @@ describe('Thermostat Router', () => {
             expect(response.status).toBe(200);
             expect(response.body).toHaveLength(2);
             expect(response.body).toEqual([
-                { id: 1, thermostatName: 'Living Room', location: 'First Floor' },
-                { id: 2, thermostatName: 'Bedroom', location: 'Second Floor' },
+                { id: 1, thermostatName: 'Living Room', location: 'First Floor', deviceId: 'therm123' },
+                { id: 2, thermostatName: 'Bedroom', location: 'Second Floor', deviceId: 'therm456' },
             ]);
         });
 
@@ -151,12 +150,13 @@ describe('Thermostat Router', () => {
 
             const response = await request
                 .post('/api/thermostat')
-                .send({ thermostatName: 'Kitchen', location: 'Main Floor' });
+                .send({ thermostatName: 'Kitchen', location: 'Main Floor', deviceId: 'therm789' });
 
             expect(response.status).toBe(201);
             expect(response.body).toHaveProperty('id', 1);
             expect(response.body).toHaveProperty('thermostatName', 'Kitchen');
             expect(response.body).toHaveProperty('location', 'Main Floor');
+            expect(response.body).toHaveProperty('deviceId', 'therm789');
         });
 
         it('should return 400 if thermostatName is missing', async () => {
@@ -173,7 +173,7 @@ describe('Thermostat Router', () => {
             expect(response.status).toBe(400);
             expect(response.body).toHaveProperty('error', 'Missing thermostatName');
         });
-
+    
         it('should return 400 if user context is missing', async () => {
             // Mock the authenticate function for this specific test
             (auth.authenticate as Mock).mockImplementation((_req: auth.AuthenticatedRequest, _res: Express.Response, next: () => void) => {
@@ -183,12 +183,11 @@ describe('Thermostat Router', () => {
             // Don't set user in the request
             const response = await request
                 .post('/api/thermostat')
-                .send({ thermostatName: 'Kitchen', location: 'Main Floor' });
+                .send({ thermostatName: 'Kitchen', location: 'Main Floor', deviceId: 'therm789' });
 
             expect(response.status).toBe(400);
             expect(response.body).toHaveProperty('error', 'Missing user context');
         });
-
         it('should handle database errors gracefully', async () => {
             // Mock the authenticate function for this specific test
             (auth.authenticate as Mock).mockImplementation((req: auth.AuthenticatedRequest, _res: Express.Response, next: () => void) => {
@@ -213,10 +212,40 @@ describe('Thermostat Router', () => {
 
             const response = await request
                 .post('/api/thermostat')
-                .send({ thermostatName: 'Kitchen', location: 'Main Floor' });
+                .send({ thermostatName: 'Kitchen', location: 'Main Floor', deviceId: 'therm789' });
 
             expect(response.status).toBe(500);
             expect(response.body).toHaveProperty('error', 'Failed to add thermostat or link to user');
+        });
+
+        it('should return 400 if location is missing', async () => {
+            // Mock the authenticate function for this specific test
+            (auth.authenticate as Mock).mockImplementation((req: auth.AuthenticatedRequest, _res: Express.Response, next: () => void) => {
+                req.user = { id: 1, username: 'testuser' };
+                next();
+            });
+
+            const response = await request
+                .post('/api/thermostat')
+                .send({ thermostatName: 'Kitchen', deviceId: 'therm789' });
+
+            expect(response.status).toBe(400);
+            expect(response.body).toHaveProperty('error', 'Missing location');
+        });
+
+        it('should return 400 if deviceId is missing', async () => {
+            // Mock the authenticate function for this specific test
+            (auth.authenticate as Mock).mockImplementation((req: auth.AuthenticatedRequest, _res: Express.Response, next: () => void) => {
+                req.user = { id: 1, username: 'testuser' };
+                next();
+            });
+
+            const response = await request
+                .post('/api/thermostat')
+                .send({ thermostatName: 'Kitchen', location: 'Main Floor' });
+
+            expect(response.status).toBe(400);
+            expect(response.body).toHaveProperty('error', 'Missing deviceId');
         });
     });
 

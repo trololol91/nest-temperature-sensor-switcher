@@ -13,7 +13,7 @@ const logger = createNamedLogger('ChangeNestThermostatScript');
  * @param {boolean} headless - Whether to run the browser in headless mode.
  * @returns {Promise<void>} - A promise that resolves when the operation is complete.
  */
-export async function changeNestThermostat(deviceID: string, thermostatName: string, headless: boolean): Promise<void> {
+export async function changeNestThermostat(deviceID: string, thermostatDeviceId: string, headless: boolean): Promise<void> {
     logger.info('Starting Playwright...');
     const browser = await chromium.launch({
         headless: headless, // Use the headless argument from yargs
@@ -51,7 +51,7 @@ export async function changeNestThermostat(deviceID: string, thermostatName: str
         await homePage.waitForHomeIconLabelVisible({ timeout: 10000 });
 
         // Click on thermostat puck item
-        const thermostatItem = await homePage.selectPuckItemByHref(thermostatName);
+        const thermostatItem = await homePage.selectPuckItemByHref(thermostatDeviceId);
         await thermostatItem?.click();
 
         // Wait for the thermostat setting button to be visible

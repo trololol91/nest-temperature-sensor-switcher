@@ -77,11 +77,11 @@ describe('Sensor Router', () => {
             // Mock the database responses for thermostat and sensor queries
             // @ts-expect-error: Mocking a specific implementation
             vi.spyOn(db, 'prepare').mockImplementation((query: string) => {
-                if (query.includes('SELECT t.id, t.name')) {
+                if (query.includes('SELECT t.id, t.name, t.deviceID')) {
                     // First query - thermostat check
                     return {
                         ...baseMockStatement,
-                        get: vi.fn(() => ({ id: 1, name: 'Living Room' })),
+                        get: vi.fn(() => ({ id: 1, name: 'Living Room', deviceID: 'thermostat123' })),
                     };
                 } else if (query.includes('SELECT s.deviceID')) {
                     // Second query - sensor check
@@ -104,7 +104,7 @@ describe('Sensor Router', () => {
             // Type assertion for TypeScript safety
             expect((response.body as { message: string }).message).toContain('Living Room Sensor');
             expect((response.body as { message: string }).message).toContain('Living Room');
-            expect(changeNestThermostat).toHaveBeenCalledWith('device123', 'Living Room', true);
+            expect(changeNestThermostat).toHaveBeenCalledWith('device123', 'thermostat123', true);
         });
 
         it('should return 400 if sensorName is missing', async () => {
@@ -147,11 +147,10 @@ describe('Sensor Router', () => {
                 req.user = { id: 1, username: 'testuser' };
                 next();
             });
-            
             // Mock the database to return no thermostat
             // @ts-expect-error: Mocking a specific implementation
             vi.spyOn(db, 'prepare').mockImplementation((query: string) => {
-                if (query.includes('SELECT t.id, t.name')) {
+                if (query.includes('SELECT t.id, t.name, t.deviceID')) {
                     return {
                         ...baseMockStatement,
                         get: vi.fn(() => null), // No thermostat found
@@ -178,11 +177,11 @@ describe('Sensor Router', () => {
             // Mock database responses - thermostat exists but sensor doesn't
             // @ts-expect-error: Mocking a specific implementation
             vi.spyOn(db, 'prepare').mockImplementation((query: string) => {
-                if (query.includes('SELECT t.id, t.name')) {
+                if (query.includes('SELECT t.id, t.name, t.deviceID')) {
                     // First query - thermostat check
                     return {
                         ...baseMockStatement,
-                        get: vi.fn(() => ({ id: 1, name: 'Living Room' })),
+                        get: vi.fn(() => ({ id: 1, name: 'Living Room', deviceID: 'thermostat123' })),
                     };
                 } else if (query.includes('SELECT s.deviceID')) {
                     // Second query - sensor check
@@ -209,14 +208,13 @@ describe('Sensor Router', () => {
                 req.user = { id: 1, username: 'testuser' };
                 next();
             });
-            
             // Mock database responses to succeed
             // @ts-expect-error: Mocking a specific implementation
             vi.spyOn(db, 'prepare').mockImplementation((query: string) => {
-                if (query.includes('SELECT t.id, t.name')) {
+                if (query.includes('SELECT t.id, t.name, t.deviceID')) {
                     return {
                         ...baseMockStatement,
-                        get: vi.fn(() => ({ id: 1, name: 'Living Room' })),
+                        get: vi.fn(() => ({ id: 1, name: 'Living Room', deviceID: 'thermostat123' })),
                     };
                 } else if (query.includes('SELECT s.deviceID')) {
                     return {

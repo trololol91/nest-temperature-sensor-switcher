@@ -22,14 +22,17 @@ router.use(authenticate);
  *       properties:
  *         id:
  *           type: integer
- *           description: The thermostat ID
- *         thermostatName:
+ *           description: The thermostat ID *         thermostatName:
  *           type: string
  *           description: The name of the thermostat
  *         location:
  *           type: string
  *           nullable: true
  *           description: The physical location of the thermostat
+ *         deviceId:
+ *           type: string
+ *           nullable: true
+ *           description: The device ID of the thermostat
  *       required:
  *         - id
  *         - thermostatName
@@ -68,15 +71,19 @@ router.use(authenticate);
  *         application/json:
  *           schema:
  *             type: object
- *             properties:
- *               thermostatName:
+ *             properties: *               thermostatName:
  *                 type: string
  *                 description: The name of the thermostat to add
  *               location:
  *                 type: string
- *                 description: The location of the thermostat (optional)
+ *                 description: The location of the thermostat
+ *               deviceId:
+ *                 type: string
+ *                 description: The device ID of the thermostat
  *             required:
  *               - thermostatName
+ *               - location
+ *               - deviceId
  *     responses:
  *       201:
  *         description: Thermostat added successfully
@@ -90,13 +97,13 @@ router.use(authenticate);
  *                   description: The ID of the created thermostat
  *                 thermostatName:
  *                   type: string
- *                   description: The name of the created thermostat
- *                 location:
+ *                   description: The name of the created thermostat *                 location:
  *                   type: string
- *                   nullable: true
  *                   description: The location of the created thermostat
- *       400:
- *         description: Bad request - Missing thermostatName
+ *                 deviceId:
+ *                   type: string
+ *                   description: The device ID of the created thermostat *       400:
+ *         description: Bad request - Missing required fields (thermostatName, location, deviceId)
  *       401:
  *         description: Unauthorized - User not authenticated
  *       500:
@@ -167,11 +174,9 @@ router.get('/', (req: AuthenticatedRequest, res) => {
     if (!userId) {
         res.status(401).json({ error: 'Missing user context' });
         return;
-    }
-
-    try {
+    }    try {
         const query = `
-            SELECT t.id, t.name as thermostatName, t.location
+            SELECT t.id, t.name as thermostatName, t.location, t.deviceId
             FROM thermostat t
             JOIN user_thermostats ut ON t.id = ut.thermostat_id
             WHERE ut.user_id = ?
@@ -186,15 +191,26 @@ router.get('/', (req: AuthenticatedRequest, res) => {
 });
 
 interface AddThermostatBody {
-  thermostatName?: string;
-  location?: string;
+  thermostatName: string;
+  location: string;
+  deviceId: string;
 }
 
 router.post('/', (req: AuthenticatedRequest<object, object, AddThermostatBody>, res) => {
-    const { thermostatName, location } = req.body;
+    const { thermostatName, location, deviceId } = req.body;
     const userId = req.user?.id;
+    
+    // Check all required fields
     if (!thermostatName) {
         res.status(400).json({ error: 'Missing thermostatName' });
+        return;
+    }
+    if (!location) {
+        res.status(400).json({ error: 'Missing location' });
+        return;
+    }
+    if (!deviceId) {
+        res.status(400).json({ error: 'Missing deviceId' });
         return;
     }
     if (!userId) {
@@ -206,8 +222,8 @@ router.post('/', (req: AuthenticatedRequest<object, object, AddThermostatBody>, 
         db.prepare('BEGIN TRANSACTION').run();
 
         // Insert the new thermostat
-        const insertThermostat = db.prepare('INSERT INTO thermostat (name, location) VALUES (?, ?)');
-        const result = insertThermostat.run(thermostatName, location ?? null);
+        const insertThermostat = db.prepare('INSERT INTO thermostat (name, location, deviceId) VALUES (?, ?, ?)');
+        const result = insertThermostat.run(thermostatName, location, deviceId);
         const thermostatId = Number(result.lastInsertRowid);
 
         // Link the thermostat to the user
@@ -216,7 +232,7 @@ router.post('/', (req: AuthenticatedRequest<object, object, AddThermostatBody>, 
 
         // Commit transaction
         db.prepare('COMMIT').run();
-        res.status(201).json({ id: thermostatId, thermostatName, location });
+        res.status(201).json({ id: thermostatId, thermostatName, location, deviceId });
     }
     catch (err) {
         db.prepare('ROLLBACK').run();
@@ -249,11 +265,6 @@ router.post('/:id/assign', (req: AuthenticatedRequest<{id: string}, object, Assi
     
     if (!currentUserId) {
         res.status(401).json({ error: 'Missing user context' });
-        return;
-    }
-
-    if (isNaN(thermostatId)) {
-        res.status(400).json({ error: 'Invalid thermostat ID' });
         return;
     }
 
