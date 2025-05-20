@@ -38,35 +38,7 @@ The Nest Temperature Sensor Switcher is a TypeScript-based project designed to m
 
 ## Adding Sensors and Configuring Thermostat
 
-### Setting the Thermostat ID
-
-1. Open the `.env` file in the root directory.
-2. Add or update the `THERMOSTAT_ID` variable with the ID of your thermostat. For example:
-   ```env
-   THERMOSTAT_ID=YOUR_THERMOSTAT_ID
-   ```
-
 ### Using Docker Compose
-
-#### Set THERMOSTAT_ID
-You can configure the `THERMOSTAT_ID` environment variable directly in the `docker-compose.yml` file. Follow these steps:
-
-1. Open the `docker-compose.yml` file in the root directory.
-2. Locate the `environment` section under the `app` service.
-3. Update the `THERMOSTAT_ID` variable with your thermostat ID. For example:
-   ```yaml
-   environment:
-     - NODE_ENV=production
-     - THERMOSTAT_ID=YOUR_THERMOSTAT_ID
-     - LOG_LEVEL=info
-   ```
-
-4. Start the application using Docker Compose:
-   ```bash
-   docker-compose up --build
-   ```
-
-This will build and start the application with the specified thermostat ID.
 
 #### Set SECRET_KEY Securely
 It is recommended to store sensitive information like `SECRET_KEY` in your machine's environment variables instead of directly in the `docker-compose.yml` file. Follow these steps:
@@ -89,7 +61,6 @@ It is recommended to store sensitive information like `SECRET_KEY` in your machi
    ```yaml
    environment:
      - NODE_ENV=production
-     - THERMOSTAT_ID=your_thermostat_id
      - LOG_LEVEL=info
      - SECRET_KEY=${SECRET_KEY}
    ```
